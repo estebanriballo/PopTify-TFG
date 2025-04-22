@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BottomAppBar
@@ -21,14 +22,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.poptify.ui.theme.PopTifyTheme
 
 class MainActivity : ComponentActivity() {
@@ -43,34 +48,70 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun App() {
     var currentScreen by remember { mutableStateOf("Home") }
 
     Scaffold(
+        topBar = {
+            TopNavigationBar(
+                onSettingsClick = { currentScreen = "Settings" }
+            )
+        },
         bottomBar = {
             BottomNavigationBar(
                 onHomeClick = { currentScreen = "Home" },
                 onSearchClick = { currentScreen = "Search" },
-                onSettingsClick = { currentScreen = "Settings" }
+                onRankingsClick = { currentScreen = "Rankings" }
             )
         }
     ) { innerPadding ->
         when (currentScreen) {
             "Home" -> HomeScreen(Modifier.padding(innerPadding))
             "Search" -> SearchScreen(Modifier.padding(innerPadding))
+            "Rankings" -> RankingsScreen(Modifier.padding(innerPadding))
             "Settings" -> SettingsScreen(Modifier.padding(innerPadding))
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopNavigationBar(
+    onSettingsClick: () -> Unit
+) {
+    TopAppBar(
+        title = {
+            Text(
+                text = "PopTify",
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
+        },
+        actions = {
+            IconButton(onClick = onSettingsClick) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Settings",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.primary,
+            actionIconContentColor = MaterialTheme.colorScheme.primary
+        )
+    )
 }
 
 @Composable
 fun BottomNavigationBar(
     onHomeClick: () -> Unit,
     onSearchClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onRankingsClick: () -> Unit
 ) {
     BottomAppBar(
         modifier = Modifier.fillMaxWidth(),
@@ -88,10 +129,10 @@ fun BottomNavigationBar(
             Icon(Icons.Default.Search, contentDescription = "Search")
         }
         IconButton(
-            onClick = onSettingsClick,
+            onClick = onRankingsClick,
             modifier = Modifier.weight(1f)
         ) {
-            Icon(Icons.Default.Settings, contentDescription = "Settings")
+            Icon(Icons.Default.List, contentDescription = "Rankings")
         }
     }
 }
@@ -130,7 +171,18 @@ fun SearchScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun SettingsScreen(modifier: Modifier = Modifier) {
+fun RankingsScreen(modifier: Modifier = Modifier) {
+    Text(
+        text = "Rankings Screen",
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        style = MaterialTheme.typography.headlineMedium
+    )
+}
+
+@Composable
+fun SettingsScreen(modifier: Modifier) {
     Text(
         text = "Settings Screen",
         modifier = modifier
