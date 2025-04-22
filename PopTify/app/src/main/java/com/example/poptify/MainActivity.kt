@@ -9,8 +9,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,30 +36,84 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            app()
+            PopTifyTheme {
+                App()
+            }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
-fun app() {
-    SearchBar() { }
+fun App() {
+    var currentScreen by remember { mutableStateOf("Home") }
+
+    Scaffold(
+        bottomBar = {
+            BottomNavigationBar(
+                onHomeClick = { currentScreen = "Home" },
+                onSearchClick = { currentScreen = "Search" },
+                onSettingsClick = { currentScreen = "Settings" }
+            )
+        }
+    ) { innerPadding ->
+        when (currentScreen) {
+            "Home" -> HomeScreen(Modifier.padding(innerPadding))
+            "Search" -> SearchScreen(Modifier.padding(innerPadding))
+            "Settings" -> SettingsScreen(Modifier.padding(innerPadding))
+        }
+    }
 }
 
 @Composable
-fun SearchBar(
-    modifier: Modifier = Modifier,
-    onSearch: (String) -> Unit
+fun BottomNavigationBar(
+    onHomeClick: () -> Unit,
+    onSearchClick: () -> Unit,
+    onSettingsClick: () -> Unit
 ) {
+    BottomAppBar(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        IconButton(
+            onClick = onHomeClick,
+            modifier = Modifier.weight(1f)
+        ) {
+            Icon(Icons.Default.Home, contentDescription = "Home")
+        }
+        IconButton(
+            onClick = onSearchClick,
+            modifier = Modifier.weight(1f)
+        ) {
+            Icon(Icons.Default.Search, contentDescription = "Search")
+        }
+        IconButton(
+            onClick = onSettingsClick,
+            modifier = Modifier.weight(1f)
+        ) {
+            Icon(Icons.Default.Settings, contentDescription = "Settings")
+        }
+    }
+}
+
+@Composable
+fun HomeScreen(modifier: Modifier = Modifier) {
+    Text(
+        text = "Home Screen",
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        style = MaterialTheme.typography.headlineMedium
+    )
+}
+
+@Composable
+fun SearchScreen(modifier: Modifier = Modifier) {
     var text by remember { mutableStateOf("") }
 
     TextField(
         value = text,
-        onValueChange = {
-            text = it
-            onSearch(it)
-        },
+        onValueChange = { text = it },
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -67,5 +126,16 @@ fun SearchBar(
             unfocusedContainerColor = MaterialTheme.colorScheme.surface,
             disabledContainerColor = MaterialTheme.colorScheme.surface,
         )
+    )
+}
+
+@Composable
+fun SettingsScreen(modifier: Modifier = Modifier) {
+    Text(
+        text = "Settings Screen",
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        style = MaterialTheme.typography.headlineMedium
     )
 }
