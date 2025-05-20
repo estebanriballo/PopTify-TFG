@@ -51,5 +51,7 @@ class MainActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun App() {
-
+    Text(
+        text = "PopTify Version 0.01"
+    )
 }
