@@ -25,6 +25,8 @@ import androidx.navigation.compose.rememberNavController
 import com.adamratzman.spotify.models.Artist
 import com.example.poptify.ui.components.PoptifyTabRow
 import com.example.poptify.ui.screens.HomeScreen
+import com.example.poptify.ui.screens.PersonalScreen
+import com.example.poptify.ui.screens.RankingsScreen
 import com.example.poptify.ui.screens.SearchScreen
 import com.example.poptify.ui.theme.PopTifyTheme
 import kotlinx.coroutines.launch
@@ -72,6 +74,12 @@ fun PoptifyApp() {
                 }
                 composable(route = Search.route) {
                     SearchScreen()
+                }
+                composable(route = Personal.route) {
+                    PersonalScreen()
+                }
+                composable(route = Rankings.route) {
+                    RankingsScreen()
                 }
             }
         }
