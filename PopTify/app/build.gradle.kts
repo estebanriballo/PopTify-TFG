@@ -51,6 +51,7 @@ dependencies {
     implementation("com.adamratzman:spotify-api-kotlin-core:3.8.6")
     implementation ("androidx.compose.material:material")
     implementation ("androidx.compose.material:material-icons-extended")
+    implementation ("com.github.bumptech.glide:compose:1.0.0-beta01")
     implementation(libs.androidx.navigation.runtime.android)
     implementation(libs.androidx.navigation.compose.android)
     implementation(libs.androidx.compose.material)
