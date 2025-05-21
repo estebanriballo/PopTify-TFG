@@ -3,6 +3,8 @@ package com.example.poptify.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -10,14 +12,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.adamratzman.spotify.models.Album
+import com.adamratzman.spotify.models.Artist
+import com.adamratzman.spotify.models.SimpleAlbum
 import com.adamratzman.spotify.models.Track
 import com.example.poptify.SpotifyApiRequest
+import com.example.poptify.ui.components.AlbumCard
+import com.example.poptify.ui.components.ArtistCard
 import com.example.poptify.ui.components.TrackCard
 import kotlinx.coroutines.launch
 
@@ -25,9 +34,13 @@ import kotlinx.coroutines.launch
 fun SearchScreen() {
     var searchQuery by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(false) }
-    val searchResults = remember { mutableStateListOf<Track>() } // Cambia esto por tu modelo de datos real
+    val searchTracksResults = remember { mutableStateListOf<Track>() }
+    val searchArtistsResults = remember { mutableStateListOf<Artist>() }
+    val searchAlbumsResults = remember { mutableStateListOf<SimpleAlbum>() }
     val coroutineScope = rememberCoroutineScope()
     val spotifyApi = remember { SpotifyApiRequest() }
+    val radioOptions = listOf("Tracks", "Artists", "Albums")
+    val (selectedOption, onOptionSelected) = remember { mutableStateOf(radioOptions[0]) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(
@@ -38,15 +51,21 @@ fun SearchScreen() {
                     try {
                         spotifyApi.buildSearchAPI()
                         val result = spotifyApi.search(searchQuery)
-                        // Procesa los resultados aquí
-                        // Esto es un ejemplo, debes adaptarlo a tu modelo de datos
-                        searchResults.clear()
+                        searchTracksResults.clear()
+                        searchArtistsResults.clear()
+                        searchAlbumsResults.clear()
                         result.tracks?.items?.forEach { track ->
-                            searchResults.add(track)
+                            searchTracksResults.add(track)
+                        }
+                        result.artists?.items?.forEach { artist ->
+                            searchArtistsResults.add(artist)
+                        }
+                        result.albums?.items?.forEach { album ->
+                            searchAlbumsResults.add(album)
                         }
                     } catch (e: Exception) {
                         // Maneja el error
-                        searchResults.clear()
+                        searchTracksResults.clear()
                     }
                 }
             },
@@ -57,11 +76,57 @@ fun SearchScreen() {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Opciones de radio button mejoradas
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .selectableGroup(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            radioOptions.forEach { text ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .selectable(
+                            selected = (text == selectedOption),
+                            onClick = { onOptionSelected(text) },
+                            role = Role.RadioButton
+                        )
+                        .padding(horizontal = 8.dp)
+                ) {
+                    RadioButton(
+                        selected = (text == selectedOption),
+                        onClick = null
+                    )
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.body1,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         // Lista de resultados
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(searchResults) { item ->
-                TrackCard(item)
-                Divider()
+
+            if (selectedOption == "Tracks"){
+                items(searchTracksResults) { item ->
+                    TrackCard(item)
+                    Divider()
+                }
+            } else if (selectedOption == "Artists"){
+                items(searchArtistsResults) { item ->
+                    ArtistCard(item)
+                    Divider()
+                }
+            } else if (selectedOption == "Albums") {
+                items(searchAlbumsResults) { item ->
+                    AlbumCard(item)
+                    Divider()
+                }
             }
         }
     }
