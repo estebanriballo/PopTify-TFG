@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "214687904357",
+    "project_id": "poptify-b3e00",
+    "storage_bucket": "poptify-b3e00.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:214687904357:android:4848fe4298d209d0424c8c",
+        "android_client_info": {
+          "package_name": "com.example.poptify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGkmy28RfWpVXiJJ0qfq8ZS7GevMeTHPk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
