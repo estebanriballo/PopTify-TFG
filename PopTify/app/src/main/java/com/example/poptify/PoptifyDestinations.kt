@@ -38,4 +38,4 @@ object Settings : PoptifyDestination {
     override val route = "settings"
 }
 
-val poptifyTabRowScreens = listOf(Home, Search, Personal, Rankings)
+val poptifyTabRowScreens = listOf(Home, Search, Personal, Rankings, Settings)

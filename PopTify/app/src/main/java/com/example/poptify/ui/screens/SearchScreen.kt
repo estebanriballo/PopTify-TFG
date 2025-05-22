@@ -1,5 +1,6 @@
 package com.example.poptify.ui.screens
 
+import android.opengl.Visibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
@@ -41,12 +43,15 @@ fun SearchScreen() {
     val spotifyApi = remember { SpotifyApiRequest() }
     val radioOptions = listOf("Tracks", "Artists", "Albums")
     val (selectedOption, onOptionSelected) = remember { mutableStateOf(radioOptions[0]) }
+    var hasSearched by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(
             query = searchQuery,
             onQueryChange = { searchQuery = it },
             onSearch = {
+                isSearching = true
+                hasSearched = true
                 coroutineScope.launch {
                     try {
                         spotifyApi.buildSearchAPI()
@@ -64,8 +69,11 @@ fun SearchScreen() {
                             searchAlbumsResults.add(album)
                         }
                     } catch (e: Exception) {
-                        // Maneja el error
                         searchTracksResults.clear()
+                        searchArtistsResults.clear()
+                        searchAlbumsResults.clear()
+                    } finally {
+                        isSearching = false
                     }
                 }
             },
@@ -76,63 +84,84 @@ fun SearchScreen() {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Opciones de radio button mejoradas
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .selectableGroup(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            radioOptions.forEach { text ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .selectable(
+        // Mostrar los RadioButtons solo si hay resultados de búsqueda
+        if (hasSearched && (searchTracksResults.isNotEmpty() ||
+                    searchArtistsResults.isNotEmpty() ||
+                    searchAlbumsResults.isNotEmpty())) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectableGroup(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                radioOptions.forEach { text ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .selectable(
+                                selected = (text == selectedOption),
+                                onClick = { onOptionSelected(text) },
+                                role = Role.RadioButton
+                            )
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        RadioButton(
                             selected = (text == selectedOption),
-                            onClick = { onOptionSelected(text) },
-                            role = Role.RadioButton
+                            onClick = null
                         )
-                        .padding(horizontal = 8.dp)
-                ) {
-                    RadioButton(
-                        selected = (text == selectedOption),
-                        onClick = null
-                    )
-                    Text(
-                        text = text,
-                        style = MaterialTheme.typography.body1,
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
+                        Text(
+                            text = text,
+                            style = MaterialTheme.typography.body1,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
                 }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Lista de resultados
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-
-            if (selectedOption == "Tracks"){
-                items(searchTracksResults) { item ->
-                    TrackCard(item)
-                    Divider()
-                }
-            } else if (selectedOption == "Artists"){
-                items(searchArtistsResults) { item ->
-                    ArtistCard(item)
-                    Divider()
-                }
-            } else if (selectedOption == "Albums") {
-                items(searchAlbumsResults) { item ->
-                    AlbumCard(item)
-                    Divider()
+        if (isSearching) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .wrapContentSize(Alignment.Center)
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                if (selectedOption == "Tracks" && searchTracksResults.isNotEmpty()) {
+                    items(searchTracksResults) { item ->
+                        TrackCard(item)
+                        Divider()
+                    }
+                } else if (selectedOption == "Artists" && searchArtistsResults.isNotEmpty()) {
+                    items(searchArtistsResults) { item ->
+                        ArtistCard(item)
+                        Divider()
+                    }
+                } else if (selectedOption == "Albums" && searchAlbumsResults.isNotEmpty()) {
+                    items(searchAlbumsResults) { item ->
+                        AlbumCard(item)
+                        Divider()
+                    }
+                } else if (hasSearched) {
+                    item {
+                        Text(
+                            text = "No se encontraron resultados",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .wrapContentWidth(Alignment.CenterHorizontally)
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SearchBar(
     query: String,

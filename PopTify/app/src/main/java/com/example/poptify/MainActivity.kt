@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -15,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -28,6 +30,7 @@ import com.example.poptify.ui.screens.HomeScreen
 import com.example.poptify.ui.screens.PersonalScreen
 import com.example.poptify.ui.screens.RankingsScreen
 import com.example.poptify.ui.screens.SearchScreen
+import com.example.poptify.ui.screens.SettingsScreen
 import com.example.poptify.ui.theme.PopTifyTheme
 import kotlinx.coroutines.launch
 
@@ -52,7 +55,15 @@ fun PoptifyApp() {
         val currentDestination = currentBackStack?.destination
 
         val currentScreen = poptifyTabRowScreens.find { it.route == currentDestination?.route } ?: Home
+
         Scaffold(
+            modifier = Modifier.systemBarsPadding(),
+            topBar = {
+                Text(
+                    text = "PopTify",
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            },
             bottomBar = {
                 PoptifyTabRow(
                     allScreens = poptifyTabRowScreens,
@@ -80,6 +91,9 @@ fun PoptifyApp() {
                 }
                 composable(route = Rankings.route) {
                     RankingsScreen()
+                }
+                composable(route = Settings.route) {
+                    SettingsScreen()
                 }
             }
         }

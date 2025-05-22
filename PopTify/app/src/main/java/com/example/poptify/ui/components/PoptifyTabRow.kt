@@ -108,7 +108,7 @@ fun PoptifyTab(
     }
 }
 
-private val TabHeight = 76.dp
+private val TabHeight = 56.dp
 private const val InactiveTabOpacity = 0.60f
 
 private const val TabFadeInAnimationDuration = 150
