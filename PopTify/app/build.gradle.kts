@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.example.poptify"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.poptify"
-        minSdk = 25
-        targetSdk = 35
+        minSdk = 24
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -48,13 +48,7 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation("com.adamratzman:spotify-api-kotlin-core:3.8.6")
-    implementation ("androidx.compose.material:material")
-    implementation ("androidx.compose.material:material-icons-extended")
-    implementation ("com.github.bumptech.glide:compose:1.0.0-beta01")
-    implementation(libs.androidx.navigation.runtime.android)
-    implementation(libs.androidx.navigation.compose.android)
-    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.material3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

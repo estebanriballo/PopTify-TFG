@@ -19,6 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PopTify"
+rootProject.name = "Poptify"
 include(":app")
- 
