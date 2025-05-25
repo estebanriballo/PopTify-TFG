@@ -1,9 +1,333 @@
 package com.example.poptify.ui.screens
 
+import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
+import com.adamratzman.spotify.models.Artist
+import com.adamratzman.spotify.models.SimpleAlbum
+import com.adamratzman.spotify.models.Track
+import com.example.poptify.FavoritesRepository
+import com.example.poptify.SpotifyApiRequest
+import com.example.poptify.ui.components.AlbumCard
+import com.example.poptify.ui.components.ArtistCard
+import com.example.poptify.ui.components.TrackCard
+import kotlinx.coroutines.launch
 
 @Composable
-fun SearchScreen() {
-    Text("Search Screen")
+fun SearchScreen(
+    favoritesRepository: FavoritesRepository = remember { FavoritesRepository() }
+) {
+    var searchQuery by remember { mutableStateOf("") }
+    var isSearching by remember { mutableStateOf(false) }
+    val searchTracksResults = remember { mutableStateListOf<Track>() }
+    val searchArtistsResults = remember { mutableStateListOf<Artist>() }
+    val searchAlbumsResults = remember { mutableStateListOf<SimpleAlbum>() }
+    val coroutineScope = rememberCoroutineScope()
+    val spotifyApi = remember { SpotifyApiRequest() }
+    val radioOptions = listOf("Tracks", "Artists", "Albums")
+    val (selectedOption, onOptionSelected) = remember { mutableStateOf(radioOptions[0]) }
+    var hasSearched by remember { mutableStateOf(false) }
+
+    val favoriteTracks = remember { mutableStateListOf<String>() }
+    val favoriteArtists = remember { mutableStateListOf<String>() }
+    val favoriteAlbums = remember { mutableStateListOf<String>() }
+
+    LaunchedEffect(Unit) {
+        // Listener para tracks (que funciona)
+        favoritesRepository.getFavoriteTracks().collect { tracks ->
+            favoriteTracks.clear()
+            favoriteTracks.addAll(tracks.map { it.id })
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        // Listener para artistas
+        favoritesRepository.getFavoriteArtists().collect { artists ->
+            Log.d("SearchScreen", "Artistas recibidos: ${artists.size}")
+            favoriteArtists.clear()
+            favoriteArtists.addAll(artists.map { it.id })
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        // Listener para álbumes
+        favoritesRepository.getFavoriteAlbums().collect { albums ->
+            Log.d("SearchScreen", "Álbumes recibidos: ${albums.size}")
+            favoriteAlbums.clear()
+            favoriteAlbums.addAll(albums.map { it.id })
+        }
+    }
+
+    fun onFavoriteClick(item: Any, isFavorite: Boolean) {
+        coroutineScope.launch {
+            when (item) {
+                is Track -> {
+                    if (isFavorite) {
+                        favoritesRepository.addFavoriteTrack(item)
+                        favoriteTracks.add(item.id) // Actualización local inmediata
+                    } else {
+                        favoritesRepository.removeFavoriteTrack(item.id)
+                        favoriteTracks.remove(item.id) // Actualización local inmediata
+                    }
+                }
+                is Artist -> {
+                    if (isFavorite) {
+                        favoritesRepository.addFavoriteArtist(item)
+                        favoriteArtists.add(item.id) // Actualización local inmediata
+                    } else {
+                        favoritesRepository.removeFavoriteArtist(item.id)
+                        favoriteArtists.remove(item.id) // Actualización local inmediata
+                    }
+                }
+                is SimpleAlbum -> {
+                    if (isFavorite) {
+                        favoritesRepository.addFavoriteAlbum(item)
+                        favoriteAlbums.add(item.id) // Actualización local inmediata
+                    } else {
+                        favoritesRepository.removeFavoriteAlbum(item.id)
+                        favoriteAlbums.remove(item.id) // Actualización local inmediata
+                    }
+                }
+            }
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        SearchBar(
+            query = searchQuery,
+            onQueryChange = { searchQuery = it },
+            onSearch = {
+                isSearching = true
+                hasSearched = true
+                coroutineScope.launch {
+                    try {
+                        spotifyApi.buildSearchAPI()
+                        val result = spotifyApi.search(searchQuery)
+                        searchTracksResults.clear()
+                        searchArtistsResults.clear()
+                        searchAlbumsResults.clear()
+                        result.tracks?.items?.forEach { track ->
+                            searchTracksResults.add(track)
+                        }
+                        result.artists?.items?.forEach { artist ->
+                            searchArtistsResults.add(artist)
+                        }
+                        result.albums?.items?.forEach { album ->
+                            searchAlbumsResults.add(album)
+                        }
+                    } catch (e: Exception) {
+                        searchTracksResults.clear()
+                        searchArtistsResults.clear()
+                        searchAlbumsResults.clear()
+                    } finally {
+                        isSearching = false
+                    }
+                }
+            },
+            isSearching = isSearching,
+            onActiveChange = { isSearching = it },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Mostrar los RadioButtons solo si hay resultados de búsqueda
+        if (hasSearched && (searchTracksResults.isNotEmpty() ||
+                    searchArtistsResults.isNotEmpty() ||
+                    searchAlbumsResults.isNotEmpty())) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectableGroup(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                radioOptions.forEach { text ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .selectable(
+                                selected = (text == selectedOption),
+                                onClick = { onOptionSelected(text) },
+                                role = Role.RadioButton
+                            )
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        RadioButton(
+                            selected = (text == selectedOption),
+                            onClick = null
+                        )
+                        Text(
+                            text = text,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        if (isSearching) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .wrapContentSize(Alignment.Center)
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                if (selectedOption == "Tracks" && searchTracksResults.isNotEmpty()) {
+                    items(searchTracksResults) { item ->
+                        TrackCard(
+                            track = item,
+                            isFavorite = favoriteTracks.contains(item.id),
+                            onFavoriteClick = { t, fav -> onFavoriteClick(t, fav) }
+                        )
+                        Spacer(
+                            Modifier.height(3.dp)
+                        )
+                    }
+                } else if (selectedOption == "Artists" && searchArtistsResults.isNotEmpty()) {
+                    items(searchArtistsResults) { item ->
+                        ArtistCard(
+                            artist = item,
+                            isFavorite = favoriteArtists.contains(item.id),
+                            onFavoriteClick = { t, fav -> onFavoriteClick(t, fav) }
+                        )
+                        Spacer(
+                            Modifier.height(3.dp)
+                        )
+                    }
+                } else if (selectedOption == "Albums" && searchAlbumsResults.isNotEmpty()) {
+                    items(searchAlbumsResults) { item ->
+                        AlbumCard(
+                            album = item,
+                            isFavorite = favoriteAlbums.contains(item.id),
+                            onFavoriteClick = { t, fav -> onFavoriteClick(t, fav) }
+                        )
+                        Spacer(
+                            Modifier.height(3.dp)
+                        )
+                    }
+                } else if (hasSearched) {
+                    item {
+                        Text(
+                            text = "No se encontraron resultados",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .wrapContentWidth(Alignment.CenterHorizontally)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    isSearching: Boolean,
+    onActiveChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    Surface(
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.primary
+    ) {
+        TextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Buscar en Spotify...") },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Buscar"
+                )
+            },
+            trailingIcon = {
+                if (isSearching) {
+                    IconButton(
+                        onClick = {
+                            onQueryChange("")
+                            onActiveChange(false)
+                            keyboardController?.hide()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Cerrar búsqueda"
+                        )
+                    }
+                }
+            },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    onSearch()
+                    keyboardController?.hide()
+                }
+            ),
+            colors = TextFieldDefaults.textFieldColors(
+                cursorColor = MaterialTheme.colorScheme.onSurface,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            singleLine = true
+        )
+    }
 }
