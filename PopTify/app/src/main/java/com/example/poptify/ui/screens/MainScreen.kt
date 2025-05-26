@@ -109,7 +109,10 @@ fun MainScreen(navController: NavController? = null) {
                 HomeScreen()
             }
             composable(route = "search") {
-                SearchScreen()
+                SearchScreen(navController = navController1)
+            }
+            composable(route = "detail-track") {
+                DetailTrack()
             }
         }
     }

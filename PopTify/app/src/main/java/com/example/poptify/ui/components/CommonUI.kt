@@ -30,20 +30,19 @@ import com.bumptech.glide.integration.compose.GlideImage
 fun TrackCard(
     track: Track,
     isFavorite: Boolean,
-    onFavoriteClick: (Track, Boolean) -> Unit
+    onFavoriteClick: (Track, Boolean) -> Unit,
+    onClick: () -> Unit
 ) {
-    val context = LocalContext.current
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-
-            }
+            .clickable (
+                onClick = onClick
+            )
     ) {
         Row {
             GlideImage(
-                model = track.album.images[0].url,
+                model = track.album.images.firstOrNull()?.url,
                 contentDescription = "Cover album ${track.name}",
                 modifier = Modifier
                     .size(width = 90.dp, height = 90.dp)
@@ -76,8 +75,6 @@ fun ArtistCard(
     isFavorite: Boolean,
     onFavoriteClick: (Artist, Boolean) -> Unit
 ) {
-    val context = LocalContext.current
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -87,7 +84,7 @@ fun ArtistCard(
     ) {
         Row {
             GlideImage(
-                model = artist.images[0].url,
+                model = artist.images.firstOrNull()?.url,
                 contentDescription = "Imagen de ${artist.name}",
                 modifier = Modifier
                     .size(width = 90.dp, height = 90.dp)
@@ -119,8 +116,6 @@ fun AlbumCard(
     isFavorite: Boolean,
     onFavoriteClick: (SimpleAlbum, Boolean) -> Unit
 ) {
-    val context = LocalContext.current
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -130,7 +125,7 @@ fun AlbumCard(
     ) {
         Row {
             GlideImage(
-                model = album.images[0].url,
+                model = album.images.firstOrNull()?.url,
                 contentDescription = "Cover album ${album.name}",
                 modifier = Modifier
                     .size(width = 90.dp, height = 90.dp)

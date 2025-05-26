@@ -2,6 +2,7 @@ package com.example.poptify
 
 import com.adamratzman.spotify.SpotifyAppApi
 import com.adamratzman.spotify.models.SpotifySearchResult
+import com.adamratzman.spotify.models.Track
 import com.adamratzman.spotify.spotifyAppApi
 import com.adamratzman.spotify.utils.Market
 

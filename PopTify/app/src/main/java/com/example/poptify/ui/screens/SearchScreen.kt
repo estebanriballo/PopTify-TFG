@@ -48,6 +48,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.adamratzman.spotify.models.Artist
 import com.adamratzman.spotify.models.SimpleAlbum
 import com.adamratzman.spotify.models.Track
@@ -60,7 +61,9 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen(
-    favoritesRepository: FavoritesRepository = remember { FavoritesRepository() }
+    favoritesRepository: FavoritesRepository = remember { FavoritesRepository() },
+    navController: NavController? = null
+
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(false) }
@@ -88,7 +91,6 @@ fun SearchScreen(
     LaunchedEffect(Unit) {
         // Listener para artistas
         favoritesRepository.getFavoriteArtists().collect { artists ->
-            Log.d("SearchScreen", "Artistas recibidos: ${artists.size}")
             favoriteArtists.clear()
             favoriteArtists.addAll(artists.map { it.id })
         }
@@ -97,7 +99,6 @@ fun SearchScreen(
     LaunchedEffect(Unit) {
         // Listener para álbumes
         favoritesRepository.getFavoriteAlbums().collect { albums ->
-            Log.d("SearchScreen", "Álbumes recibidos: ${albums.size}")
             favoriteAlbums.clear()
             favoriteAlbums.addAll(albums.map { it.id })
         }
@@ -176,6 +177,10 @@ fun SearchScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        LaunchedEffect(searchArtistsResults) {
+            Log.d("SearchDebug", "Artists results: ${searchArtistsResults.size}")
+        }
+
         // Mostrar los RadioButtons solo si hay resultados de búsqueda
         if (hasSearched && (searchTracksResults.isNotEmpty() ||
                     searchArtistsResults.isNotEmpty() ||
@@ -186,23 +191,67 @@ fun SearchScreen(
                     .selectableGroup(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                radioOptions.forEach { text ->
+                if (searchTracksResults.isNotEmpty()){
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .selectable(
-                                selected = (text == selectedOption),
-                                onClick = { onOptionSelected(text) },
+                                selected = (radioOptions[0] == selectedOption),
+                                onClick = { onOptionSelected(radioOptions[0]) },
                                 role = Role.RadioButton
                             )
                             .padding(horizontal = 8.dp)
                     ) {
                         RadioButton(
-                            selected = (text == selectedOption),
+                            selected = (radioOptions[0] == selectedOption),
                             onClick = null
                         )
                         Text(
-                            text = text,
+                            text = radioOptions[0],
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                }
+                if (searchArtistsResults.isNotEmpty()){
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .selectable(
+                                selected = (radioOptions[1] == selectedOption),
+                                onClick = { onOptionSelected(radioOptions[1]) },
+                                role = Role.RadioButton
+                            )
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        RadioButton(
+                            selected = (radioOptions[1] == selectedOption),
+                            onClick = null
+                        )
+                        Text(
+                            text = radioOptions[1],
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                }
+                if (searchAlbumsResults.isNotEmpty()){
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .selectable(
+                                selected = (radioOptions[2] == selectedOption),
+                                onClick = { onOptionSelected(radioOptions[2]) },
+                                role = Role.RadioButton
+                            )
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        RadioButton(
+                            selected = (radioOptions[2] == selectedOption),
+                            onClick = null
+                        )
+                        Text(
+                            text = radioOptions[2],
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(start = 4.dp)
                         )
@@ -228,7 +277,10 @@ fun SearchScreen(
                         TrackCard(
                             track = item,
                             isFavorite = favoriteTracks.contains(item.id),
-                            onFavoriteClick = { t, fav -> onFavoriteClick(t, fav) }
+                            onFavoriteClick = { t, fav -> onFavoriteClick(t, fav) },
+                            onClick = {
+                                navController?.navigate("detail-track")
+                            }
                         )
                         Spacer(
                             Modifier.height(3.dp)
