@@ -31,10 +31,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
@@ -111,8 +113,28 @@ fun MainScreen(navController: NavController? = null) {
             composable(route = "search") {
                 SearchScreen(navController = navController1)
             }
-            composable(route = "detail-track") {
-                DetailTrack()
+            composable(
+                route = "detail-track/{trackId}",
+                arguments = listOf(navArgument("trackId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val trackId = backStackEntry.arguments?.getString("trackId") ?: ""
+                DetailTrack(trackId = trackId, navController = navController1)
+            }
+
+            composable(
+                route = "detail-artist/{artistId}",
+                arguments = listOf(navArgument("artistId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val artistId = backStackEntry.arguments?.getString("artistId") ?: ""
+                DetailArtist(artistId = artistId, navController = navController1)
+            }
+
+            composable(
+                route = "detail-album/{albumId}",
+                arguments = listOf(navArgument("albumId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val albumId = backStackEntry.arguments?.getString("albumId") ?: ""
+                DetailAlbum(albumId = albumId, navController = navController1)
             }
         }
     }

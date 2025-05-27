@@ -95,7 +95,7 @@ fun PoptifyApp() {
             RegisterScreen(
                 navController = navController,
                 onRegisterSuccess = {
-                    navController.navigate("main") {
+                    navController.navigate("login") {
                         popUpTo(navController.graph.startDestinationId) {
                             inclusive = true
                         }

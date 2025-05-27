@@ -181,7 +181,6 @@ fun SearchScreen(
             Log.d("SearchDebug", "Artists results: ${searchArtistsResults.size}")
         }
 
-        // Mostrar los RadioButtons solo si hay resultados de búsqueda
         if (hasSearched && (searchTracksResults.isNotEmpty() ||
                     searchArtistsResults.isNotEmpty() ||
                     searchAlbumsResults.isNotEmpty())) {
@@ -279,7 +278,7 @@ fun SearchScreen(
                             isFavorite = favoriteTracks.contains(item.id),
                             onFavoriteClick = { t, fav -> onFavoriteClick(t, fav) },
                             onClick = {
-                                navController?.navigate("detail-track")
+                                navController?.navigate("detail-track/${item.id}") // Pasa el ID aquí
                             }
                         )
                         Spacer(
@@ -291,7 +290,10 @@ fun SearchScreen(
                         ArtistCard(
                             artist = item,
                             isFavorite = favoriteArtists.contains(item.id),
-                            onFavoriteClick = { t, fav -> onFavoriteClick(t, fav) }
+                            onFavoriteClick = { t, fav -> onFavoriteClick(t, fav) },
+                            onClick = {
+                                navController?.navigate("detail-artist/${item.id}") // Pasa el ID aquí
+                            }
                         )
                         Spacer(
                             Modifier.height(3.dp)
@@ -302,7 +304,10 @@ fun SearchScreen(
                         AlbumCard(
                             album = item,
                             isFavorite = favoriteAlbums.contains(item.id),
-                            onFavoriteClick = { t, fav -> onFavoriteClick(t, fav) }
+                            onFavoriteClick = { t, fav -> onFavoriteClick(t, fav) },
+                            onClick = {
+                                navController?.navigate("detail-album/${item.id}") // Pasa el ID aquí
+                            }
                         )
                         Spacer(
                             Modifier.height(3.dp)
