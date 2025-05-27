@@ -24,6 +24,7 @@ import com.adamratzman.spotify.models.SimpleAlbum
 import com.adamratzman.spotify.models.Track
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.poptify.R
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
@@ -42,7 +43,7 @@ fun TrackCard(
     ) {
         Row {
             GlideImage(
-                model = track.album.images.firstOrNull()?.url,
+                model = track.album.images.firstOrNull()?.url ?: R.drawable.ic_music_note,
                 contentDescription = "Cover album ${track.name}",
                 modifier = Modifier
                     .size(width = 90.dp, height = 90.dp)
@@ -73,18 +74,19 @@ fun TrackCard(
 fun ArtistCard(
     artist: Artist,
     isFavorite: Boolean,
-    onFavoriteClick: (Artist, Boolean) -> Unit
+    onFavoriteClick: (Artist, Boolean) -> Unit,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-
-            }
+            .clickable (
+                onClick = onClick
+            )
     ) {
         Row {
             GlideImage(
-                model = artist.images.firstOrNull()?.url,
+                model = artist.images.firstOrNull()?.url ?: R.drawable.ic_music_note,
                 contentDescription = "Imagen de ${artist.name}",
                 modifier = Modifier
                     .size(width = 90.dp, height = 90.dp)
@@ -114,18 +116,19 @@ fun ArtistCard(
 fun AlbumCard(
     album: SimpleAlbum,
     isFavorite: Boolean,
-    onFavoriteClick: (SimpleAlbum, Boolean) -> Unit
+    onFavoriteClick: (SimpleAlbum, Boolean) -> Unit,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-
-            }
+            .clickable (
+                onClick = onClick
+            )
     ) {
         Row {
             GlideImage(
-                model = album.images.firstOrNull()?.url,
+                model = album.images.firstOrNull()?.url ?: R.drawable.ic_music_note,
                 contentDescription = "Cover album ${album.name}",
                 modifier = Modifier
                     .size(width = 90.dp, height = 90.dp)
