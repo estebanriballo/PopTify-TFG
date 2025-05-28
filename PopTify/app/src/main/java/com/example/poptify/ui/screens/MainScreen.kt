@@ -14,14 +14,21 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -40,65 +47,74 @@ import androidx.navigation.navArgument
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(navController: NavController? = null) {
     val navController1 = rememberNavController()
-    val auth = Firebase.auth
+    val currentRoute = navController1.currentBackStackEntryAsState().value?.destination?.route
 
     Scaffold(
         modifier = Modifier.systemBarsPadding(),
         topBar = {
-            Row(
-                Modifier
-                    .selectableGroup()
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Poptify",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                TextButton(
-                    onClick = {
-                        auth.signOut()
-                        navController?.navigate("login") {
-                            popUpTo(0)
-                        }
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "Poptify",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    )
+                },
+                actions = {
+                    IconButton(
+                        onClick = { navController1.navigate("settings") }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = "Settings"
+                        )
                     }
-                ) {
-                    Text("Cerrar sesión")
-                }
-            }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            )
         },
         bottomBar = {
-            Row(
-                Modifier
-                    .selectableGroup()
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                IconButton(
+            NavigationBar {
+                NavigationBarItem(
+                    selected = navController1.currentDestination?.route == "home",
                     onClick = { navController1.navigate("home") },
-                    modifier = Modifier
-                        .padding(horizontal = 10.dp)
-                        .size(30.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Home,
-                        contentDescription = "Home"
-                    )
-                }
-                IconButton(
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Home,
+                            contentDescription = "Home"
+                        )
+                    },
+                    label = { Text("Home") }
+                )
+                NavigationBarItem(
+                    selected = navController1.currentDestination?.route == "search",
                     onClick = { navController1.navigate("search") },
-                    modifier = Modifier
-                        .padding(horizontal = 10.dp)
-                        .size(30.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Search"
-                    )
-                }
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search"
+                        )
+                    },
+                    label = { Text("Search") }
+                )
+                NavigationBarItem(
+                    selected = navController1.currentDestination?.route == "personal",
+                    onClick = { navController1.navigate("personal") },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Person,
+                            contentDescription = "Personal"
+                        )
+                    },
+                    label = { Text("Profile") }
+                )
             }
         }
     ) { innerPadding ->
@@ -113,6 +129,17 @@ fun MainScreen(navController: NavController? = null) {
             composable(route = "search") {
                 SearchScreen(navController = navController1)
             }
+            composable(route = "personal") {
+                PersonalScreen()
+            }
+            composable(route = "settings") {
+                SettingsScreen(
+                    navController = navController,
+                    navController1 = navController1
+                )
+            }
+
+
             composable(
                 route = "detail-track/{trackId}",
                 arguments = listOf(navArgument("trackId") { type = NavType.StringType })

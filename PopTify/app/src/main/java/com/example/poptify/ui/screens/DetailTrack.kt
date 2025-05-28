@@ -166,7 +166,7 @@ fun DetailTrack(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detalles") },
+                title = { Text("Detalles Track") },
                 navigationIcon = {
                     IconButton(onClick = { navController?.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, "Volver")

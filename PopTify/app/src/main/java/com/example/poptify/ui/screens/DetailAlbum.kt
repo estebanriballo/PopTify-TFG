@@ -172,7 +172,7 @@ fun DetailAlbum(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detalles Artista") },
+                title = { Text("Detalles Album") },
                 navigationIcon = {
                     IconButton(onClick = { navController?.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, "Volver")
