@@ -153,3 +153,46 @@ fun AlbumCard(
         }
     }
 }
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+fun AlbumCard(
+    album: Album,
+    isFavorite: Boolean,
+    onFavoriteClick: (Album, Boolean) -> Unit,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable (
+                onClick = onClick
+            )
+    ) {
+        Row {
+            GlideImage(
+                model = album.images.firstOrNull()?.url ?: R.drawable.ic_music_note,
+                contentDescription = "Cover album ${album.name}",
+                modifier = Modifier
+                    .size(width = 90.dp, height = 90.dp)
+                    .padding(all = 15.dp)
+            )
+            Column(
+                modifier = Modifier
+                    .padding(all = 15.dp)
+            ) {
+                Text(text = album.name)
+                Text(text = album.artists[0].name)
+            }
+            IconButton(
+                onClick = { onFavoriteClick(album, !isFavorite) }
+            ) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (isFavorite) "Quitar de favoritos" else "Añadir a favoritos",
+                    tint = if (isFavorite) Color.Red else Color.Gray
+                )
+            }
+        }
+    }
+}

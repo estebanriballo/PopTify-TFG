@@ -1,6 +1,7 @@
 package com.example.poptify
 
 import android.util.Log
+import com.adamratzman.spotify.models.Album
 import com.adamratzman.spotify.models.Artist
 import com.adamratzman.spotify.models.SimpleAlbum
 import com.adamratzman.spotify.models.Track
@@ -150,6 +151,25 @@ class FavoritesRepository {
             .set(favorite)
             .await()
     }
+
+    suspend fun addFavoriteAlbum(album: Album) {
+        if (currentUserId == null) return
+
+        val favorite = FavoriteAlbum(
+            id = album.id,
+            name = album.name,
+            artistNames = album.artists.joinToString(", ") { it.name },
+            albumCoverUrl = album.images.firstOrNull()?.url ?: ""
+        )
+
+        db.collection("users")
+            .document(currentUserId!!)
+            .collection("favoriteAlbums")
+            .document(favorite.id)
+            .set(favorite)
+            .await()
+    }
+
 
     suspend fun removeFavoriteAlbum(albumId: String) {
         currentUserId?.let { uid ->

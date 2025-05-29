@@ -13,7 +13,7 @@ class SearchHistoryPreferences(private val context: Context) {
 
     val searchHistory: Flow<List<String>> = context.dataStore.data
         .map { preferences ->
-            preferences[SEARCH_HISTORY]?.toList() ?: emptyList()
+            preferences[SEARCH_HISTORY]?.toList()?.reversed() ?: emptyList()
         }
 
     suspend fun addSearchQuery(query: String) {

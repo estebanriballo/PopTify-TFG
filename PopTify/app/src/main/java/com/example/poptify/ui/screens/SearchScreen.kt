@@ -1,6 +1,6 @@
 package com.example.poptify.ui.screens
 
-import android.util.Log
+import SearchHistoryPreferences
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,9 +31,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -58,12 +57,15 @@ import com.example.poptify.ui.components.AlbumCard
 import com.example.poptify.ui.components.ArtistCard
 import com.example.poptify.ui.components.TrackCard
 import kotlinx.coroutines.launch
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
+import com.adamratzman.spotify.models.Album
 
 @Composable
 fun SearchScreen(
     favoritesRepository: FavoritesRepository = remember { FavoritesRepository() },
-    navController: NavController? = null
-
+    navController: NavController? = null,
+    context: Context = LocalContext.current
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(false) }
@@ -79,6 +81,10 @@ fun SearchScreen(
     val favoriteTracks = remember { mutableStateListOf<String>() }
     val favoriteArtists = remember { mutableStateListOf<String>() }
     val favoriteAlbums = remember { mutableStateListOf<String>() }
+
+    val searchHistoryPreferences = remember { SearchHistoryPreferences(context) }
+    val searchHistory by searchHistoryPreferences.searchHistory.collectAsState(initial = emptyList())
+    var showHistory by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         // Listener para tracks (que funciona)
@@ -134,6 +140,15 @@ fun SearchScreen(
                         favoriteAlbums.remove(item.id) // Actualización local inmediata
                     }
                 }
+                is Album -> {
+                    if (isFavorite) {
+                        favoritesRepository.addFavoriteAlbum(item)
+                        favoriteAlbums.add(item.id) // Actualización local inmediata
+                    } else {
+                        favoritesRepository.removeFavoriteAlbum(item.id)
+                        favoriteAlbums.remove(item.id) // Actualización local inmediata
+                    }
+                }
             }
         }
     }
@@ -141,32 +156,42 @@ fun SearchScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(
             query = searchQuery,
-            onQueryChange = { searchQuery = it },
+            onQueryChange = {
+                searchQuery = it
+                showHistory = it.isEmpty()
+            },
             onSearch = {
-                isSearching = true
-                hasSearched = true
-                coroutineScope.launch {
-                    try {
-                        spotifyApi.buildSearchAPI()
-                        val result = spotifyApi.search(searchQuery)
-                        searchTracksResults.clear()
-                        searchArtistsResults.clear()
-                        searchAlbumsResults.clear()
-                        result.tracks?.items?.forEach { track ->
-                            searchTracksResults.add(track)
+                if (searchQuery.isNotBlank()) {
+                    coroutineScope.launch {
+                        searchHistoryPreferences.addSearchQuery(searchQuery)
+                    }
+                    isSearching = true
+                    hasSearched = true
+                    showHistory = false
+
+                    coroutineScope.launch {
+                        try {
+                            spotifyApi.buildSearchAPI()
+                            val result = spotifyApi.search(searchQuery)
+                            searchTracksResults.clear()
+                            searchArtistsResults.clear()
+                            searchAlbumsResults.clear()
+                            result.tracks?.items?.forEach { track ->
+                                searchTracksResults.add(track)
+                            }
+                            result.artists?.items?.forEach { artist ->
+                                searchArtistsResults.add(artist)
+                            }
+                            result.albums?.items?.forEach { album ->
+                                searchAlbumsResults.add(album)
+                            }
+                        } catch (e: Exception) {
+                            searchTracksResults.clear()
+                            searchArtistsResults.clear()
+                            searchAlbumsResults.clear()
+                        } finally {
+                            isSearching = false
                         }
-                        result.artists?.items?.forEach { artist ->
-                            searchArtistsResults.add(artist)
-                        }
-                        result.albums?.items?.forEach { album ->
-                            searchAlbumsResults.add(album)
-                        }
-                    } catch (e: Exception) {
-                        searchTracksResults.clear()
-                        searchArtistsResults.clear()
-                        searchAlbumsResults.clear()
-                    } finally {
-                        isSearching = false
                     }
                 }
             },
@@ -177,88 +202,111 @@ fun SearchScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        LaunchedEffect(searchArtistsResults) {
-            Log.d("SearchDebug", "Artists results: ${searchArtistsResults.size}")
-        }
-
-        if (hasSearched && (searchTracksResults.isNotEmpty() ||
-                    searchArtistsResults.isNotEmpty() ||
-                    searchAlbumsResults.isNotEmpty())) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .selectableGroup(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                if (searchTracksResults.isNotEmpty()){
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+        if (showHistory && searchHistory.isNotEmpty()) {
+            Text(
+                text = "Historial de búsqueda",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(16.dp, 8.dp)
+            )
+            LazyColumn {
+                items(searchHistory) { historyItem ->
+                    Surface(
+                        onClick = {
+                            searchQuery = historyItem
+                            showHistory = false
+                        },
                         modifier = Modifier
-                            .selectable(
-                                selected = (radioOptions[0] == selectedOption),
-                                onClick = { onOptionSelected(radioOptions[0]) },
-                                role = Role.RadioButton
-                            )
-                            .padding(horizontal = 8.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
-                        RadioButton(
-                            selected = (radioOptions[0] == selectedOption),
-                            onClick = null
-                        )
                         Text(
-                            text = radioOptions[0],
+                            text = historyItem,
                             style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
-                    }
-                }
-                if (searchArtistsResults.isNotEmpty()){
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .selectable(
-                                selected = (radioOptions[1] == selectedOption),
-                                onClick = { onOptionSelected(radioOptions[1]) },
-                                role = Role.RadioButton
-                            )
-                            .padding(horizontal = 8.dp)
-                    ) {
-                        RadioButton(
-                            selected = (radioOptions[1] == selectedOption),
-                            onClick = null
-                        )
-                        Text(
-                            text = radioOptions[1],
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
-                    }
-                }
-                if (searchAlbumsResults.isNotEmpty()){
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .selectable(
-                                selected = (radioOptions[2] == selectedOption),
-                                onClick = { onOptionSelected(radioOptions[2]) },
-                                role = Role.RadioButton
-                            )
-                            .padding(horizontal = 8.dp)
-                    ) {
-                        RadioButton(
-                            selected = (radioOptions[2] == selectedOption),
-                            onClick = null
-                        )
-                        Text(
-                            text = radioOptions[2],
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 4.dp)
+                            modifier = Modifier.padding(8.dp)
                         )
                     }
                 }
             }
+        } else {
+            if (hasSearched && (searchTracksResults.isNotEmpty() ||
+                        searchArtistsResults.isNotEmpty() ||
+                        searchAlbumsResults.isNotEmpty())) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectableGroup(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    if (searchTracksResults.isNotEmpty()){
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .selectable(
+                                    selected = (radioOptions[0] == selectedOption),
+                                    onClick = { onOptionSelected(radioOptions[0]) },
+                                    role = Role.RadioButton
+                                )
+                                .padding(horizontal = 8.dp)
+                        ) {
+                            RadioButton(
+                                selected = (radioOptions[0] == selectedOption),
+                                onClick = null
+                            )
+                            Text(
+                                text = radioOptions[0],
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(start = 4.dp)
+                            )
+                        }
+                    }
+                    if (searchArtistsResults.isNotEmpty()){
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .selectable(
+                                    selected = (radioOptions[1] == selectedOption),
+                                    onClick = { onOptionSelected(radioOptions[1]) },
+                                    role = Role.RadioButton
+                                )
+                                .padding(horizontal = 8.dp)
+                        ) {
+                            RadioButton(
+                                selected = (radioOptions[1] == selectedOption),
+                                onClick = null
+                            )
+                            Text(
+                                text = radioOptions[1],
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(start = 4.dp)
+                            )
+                        }
+                    }
+                    if (searchAlbumsResults.isNotEmpty()){
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .selectable(
+                                    selected = (radioOptions[2] == selectedOption),
+                                    onClick = { onOptionSelected(radioOptions[2]) },
+                                    role = Role.RadioButton
+                                )
+                                .padding(horizontal = 8.dp)
+                        ) {
+                            RadioButton(
+                                selected = (radioOptions[2] == selectedOption),
+                                onClick = null
+                            )
+                            Text(
+                                text = radioOptions[2],
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(start = 4.dp)
+                            )
+                        }
+                    }
+                }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
 
         if (isSearching) {
