@@ -214,6 +214,39 @@ fun SearchScreen(
                         onClick = {
                             searchQuery = historyItem
                             showHistory = false
+                            if (historyItem.isNotBlank()) {
+                                coroutineScope.launch {
+                                    searchHistoryPreferences.addSearchQuery(historyItem)
+                                }
+                                isSearching = true
+                                hasSearched = true
+                                showHistory = false
+
+                                coroutineScope.launch {
+                                    try {
+                                        spotifyApi.buildSearchAPI()
+                                        val result = spotifyApi.search(historyItem) // Usamos historyItem en lugar de searchQuery
+                                        searchTracksResults.clear()
+                                        searchArtistsResults.clear()
+                                        searchAlbumsResults.clear()
+                                        result.tracks?.items?.forEach { track ->
+                                            searchTracksResults.add(track)
+                                        }
+                                        result.artists?.items?.forEach { artist ->
+                                            searchArtistsResults.add(artist)
+                                        }
+                                        result.albums?.items?.forEach { album ->
+                                            searchAlbumsResults.add(album)
+                                        }
+                                    } catch (e: Exception) {
+                                        searchTracksResults.clear()
+                                        searchArtistsResults.clear()
+                                        searchAlbumsResults.clear()
+                                    } finally {
+                                        isSearching = false
+                                    }
+                                }
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()

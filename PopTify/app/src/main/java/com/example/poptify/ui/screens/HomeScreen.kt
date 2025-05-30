@@ -23,6 +23,7 @@ import com.example.poptify.ui.components.AlbumCard
 import com.example.poptify.ui.components.ArtistCard
 import com.example.poptify.ui.components.TrackCard
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @Composable
@@ -31,100 +32,114 @@ fun HomeScreen(
     navController: NavController? = null,
     spotifyApi: SpotifyApiRequest = remember { SpotifyApiRequest() }
 ) {
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
 
-    // Estados para los favoritos
-    val favoriteTracks = remember { mutableStateListOf<Track>() }
-    val favoriteArtists = remember { mutableStateListOf<Artist>() }
-    val favoriteAlbums = remember { mutableStateListOf<Album>() }
+    // Estados simplificados
+    val (tracks, setTracks) = remember { mutableStateOf<List<Track>>(emptyList()) }
+    val (artists, setArtists) = remember { mutableStateOf<List<Artist>>(emptyList()) }
+    val (albums, setAlbums) = remember { mutableStateOf<List<Album>>(emptyList()) }
+    val (isLoading, setLoading) = remember { mutableStateOf(true) }
 
-    // Estados de carga
-    var isLoadingTracks by remember { mutableStateOf(true) }
-    var isLoadingArtists by remember { mutableStateOf(true) }
-    var isLoadingAlbums by remember { mutableStateOf(true) }
-
-    // Cargar favoritos al iniciar
+    // Cargar datos una sola vez al entrar
     LaunchedEffect(Unit) {
-        coroutineScope.launch {
+        scope.launch {
             try {
+                // 1. Inicializar API si es necesario
                 spotifyApi.buildSearchAPI()
 
-                // Cargar todos los favoritos en paralelo
-                val tracksDeferred = async { loadFavoriteTracks(favoritesRepository, spotifyApi, favoriteTracks) }
-                val artistsDeferred = async { loadFavoriteArtists(favoritesRepository, spotifyApi, favoriteArtists) }
-                val albumsDeferred = async { loadFavoriteAlbums(favoritesRepository, spotifyApi, favoriteAlbums) }
+                // 2. Cargar IDs de favoritos
+                val favTracks = favoritesRepository.getFavoriteTracks().first()
+                val favArtists = favoritesRepository.getFavoriteArtists().first()
+                val favAlbums = favoritesRepository.getFavoriteAlbums().first()
 
-                Log.e("ee", favoriteTracks[0].name)
+                // 3. Obtener los objetos completos
+                val loadedTracks = favTracks.mapNotNull {
+                    runCatching { spotifyApi.getTrack(it.id) }.getOrNull()
+                }
 
-                // Esperar a que todos completen
-                tracksDeferred.await().also { isLoadingTracks = false }
-                artistsDeferred.await().also { isLoadingArtists = false }
-                albumsDeferred.await().also { isLoadingAlbums = false }
+                val loadedArtists = favArtists.mapNotNull {
+                    runCatching { spotifyApi.getArtist(it.id) }.getOrNull()
+                }
+
+                val loadedAlbums = favAlbums.mapNotNull {
+                    runCatching { spotifyApi.getAlbum(it.id) }.getOrNull()
+                }
+
+                // 4. Actualizar estado
+                setTracks(loadedTracks)
+                setArtists(loadedArtists)
+                setAlbums(loadedAlbums)
+
             } catch (e: Exception) {
-                e.printStackTrace()
-                isLoadingTracks = false
-                isLoadingArtists = false
-                isLoadingAlbums = false
+                Log.e("HomeScreen", "Error loading favorites", e)
+            } finally {
+                setLoading(false)
             }
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        // Sección de Tracks
-        FavoriteSection(
-            title = "Favorite Tracks",
-            isLoading = isLoadingTracks,
-            items = favoriteTracks,
-            onSeeAllClick = { navController?.navigate("personal") },
-            itemContent = { track ->
-                TrackCard(
-                    track = track,
-                    isFavorite = true,
-                    onFavoriteClick = { _, _ -> },
-                    onClick = { navController?.navigate("detail-track/${track.id}") }
-                )
-            }
-        )
+    if (isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            // Sección de Tracks
+            FavoriteSection(
+                title = "Favorite Tracks",
+                isLoading = isLoading,
+                items = if (tracks.size > 3) tracks.take(4) else tracks,
+                onSeeAllClick = { navController?.navigate("personal") },
+                itemContent = { track ->
+                    TrackCard(
+                        track = track,
+                        isFavorite = true,
+                        onFavoriteClick = { _, _ -> },
+                        onClick = { navController?.navigate("detail-track/${track.id}") }
+                    )
+                }
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // Sección de Artistas
-        FavoriteSection(
-            title = "Favorite Artists",
-            isLoading = isLoadingArtists,
-            items = favoriteArtists,
-            onSeeAllClick = { navController?.navigate("personal") },
-            itemContent = { artist ->
-                ArtistCard(
-                    artist = artist,
-                    isFavorite = true,
-                    onFavoriteClick = { _, _ -> },
-                    onClick = { navController?.navigate("detail-artist/${artist.id}") }
-                )
-            }
-        )
+            // Sección de Artistas
+            FavoriteSection(
+                title = "Favorite Artists",
+                isLoading = isLoading,
+                items = if (artists.size > 3) artists.take(4) else artists,
+                onSeeAllClick = { navController?.navigate("personal") },
+                itemContent = { artist ->
+                    ArtistCard(
+                        artist = artist,
+                        isFavorite = true,
+                        onFavoriteClick = { _, _ -> },
+                        onClick = { navController?.navigate("detail-artist/${artist.id}") }
+                    )
+                }
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // Sección de Álbumes
-        FavoriteSection(
-            title = "Favorite Albums",
-            isLoading = isLoadingAlbums,
-            items = favoriteAlbums,
-            onSeeAllClick = { navController?.navigate("personal") },
-            itemContent = { album ->
-                AlbumCard(
-                    album = album,
-                    isFavorite = true,
-                    onFavoriteClick = { _, _ -> },
-                    onClick = { navController?.navigate("detail-album/${album.id}") }
-                )
-            }
-        )
+            // Sección de Álbumes
+            FavoriteSection(
+                title = "Favorite Albums",
+                isLoading = isLoading,
+                items = if (albums.size > 3) albums.take(4) else albums,
+                onSeeAllClick = { navController?.navigate("personal") },
+                itemContent = { album ->
+                    AlbumCard(
+                        album = album,
+                        isFavorite = true,
+                        onFavoriteClick = { _, _ -> },
+                        onClick = { navController?.navigate("detail-album/${album.id}") }
+                    )
+                }
+            )
+        }
     }
 }
 
@@ -182,80 +197,5 @@ fun <T> FavoriteSection(
                 }
             }
         }
-    }
-}
-
-private suspend fun loadFavoriteTracks(
-    favoritesRepository: FavoritesRepository,
-    spotifyApi: SpotifyApiRequest,
-    favoriteTracks: MutableList<Track>
-): Boolean {
-    return try {
-        favoritesRepository.getFavoriteTracks().collect { favTracks ->
-            favTracks.take(6).forEach { favTrack ->
-                try {
-                    val track = spotifyApi.getTrack(favTrack.id)
-                    if (!favoriteTracks.any { it.id == track.id }) {
-                        favoriteTracks.add(track)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
-        true
-    } catch (e: Exception) {
-        e.printStackTrace()
-        false
-    }
-}
-
-private suspend fun loadFavoriteArtists(
-    favoritesRepository: FavoritesRepository,
-    spotifyApi: SpotifyApiRequest,
-    favoriteArtists: MutableList<Artist>
-): Boolean {
-    return try {
-        favoritesRepository.getFavoriteArtists().collect { favArtists ->
-            favArtists.take(6).forEach { favArtist ->
-                try {
-                    val artist = spotifyApi.getArtist(favArtist.id)
-                    if (!favoriteArtists.any { it.id == artist.id }) {
-                        favoriteArtists.add(artist)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
-        true
-    } catch (e: Exception) {
-        e.printStackTrace()
-        false
-    }
-}
-
-private suspend fun loadFavoriteAlbums(
-    favoritesRepository: FavoritesRepository,
-    spotifyApi: SpotifyApiRequest,
-    favoriteAlbums: MutableList<Album>
-): Boolean {
-    return try {
-        favoritesRepository.getFavoriteAlbums().collect { favAlbums ->
-            favAlbums.take(6).forEach { favAlbum ->
-                try {
-                    val album = spotifyApi.getAlbum(favAlbum.id)
-                    if (!favoriteAlbums.any { it.id == album.id }) {
-                        favoriteAlbums.add(album)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
-        true
-    } catch (e: Exception) {
-        e.printStackTrace()
-        false
     }
 }

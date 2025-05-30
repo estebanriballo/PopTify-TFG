@@ -124,13 +124,13 @@ fun MainScreen(navController: NavController? = null) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(route = "home") {
-                HomeScreen()
+                HomeScreen(navController = navController1)
             }
             composable(route = "search") {
                 SearchScreen(navController = navController1)
             }
             composable(route = "personal") {
-                PersonalScreen()
+                PersonalScreen(navController = navController1)
             }
             composable(route = "settings") {
                 SettingsScreen(
