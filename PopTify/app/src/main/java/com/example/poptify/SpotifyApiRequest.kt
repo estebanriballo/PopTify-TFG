@@ -31,6 +31,10 @@ class SpotifyApiRequest {
         return api!!.artists.getArtist(artistId)!!
     }
 
+    suspend fun getRecommendations(artist: Artist): List<Artist>{
+        return api!!.artists.getRelatedArtists(artist.id)
+    }
+
     suspend fun getAlbum(albumId: String): Album {
         return api!!.albums.getAlbum(albumId)!!
     }

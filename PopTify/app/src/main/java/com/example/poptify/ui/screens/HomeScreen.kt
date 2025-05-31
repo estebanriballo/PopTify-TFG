@@ -35,10 +35,10 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
 
     // Estados simplificados
-    val (tracks, setTracks) = remember { mutableStateOf<List<Track>>(emptyList()) }
-    val (artists, setArtists) = remember { mutableStateOf<List<Artist>>(emptyList()) }
-    val (albums, setAlbums) = remember { mutableStateOf<List<Album>>(emptyList()) }
-    val (isLoading, setLoading) = remember { mutableStateOf(true) }
+    var tracks by remember { mutableStateOf<List<Track>>(emptyList()) }
+    var artists by remember { mutableStateOf<List<Artist>>(emptyList()) }
+    var albums by remember { mutableStateOf<List<Album>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
 
     // Cargar datos una sola vez al entrar
     LaunchedEffect(Unit) {
@@ -66,17 +66,61 @@ fun HomeScreen(
                 }
 
                 // 4. Actualizar estado
-                setTracks(loadedTracks)
-                setArtists(loadedArtists)
-                setAlbums(loadedAlbums)
+                tracks = (loadedTracks)
+                artists = (loadedArtists)
+                albums =(loadedAlbums)
 
             } catch (e: Exception) {
                 Log.e("HomeScreen", "Error loading favorites", e)
             } finally {
-                setLoading(false)
+                isLoading = (false)
             }
         }
     }
+
+    val onFavoriteClick: (Any, Boolean) -> Unit = { item, isFavorite ->
+        scope.launch {
+            when (item) {
+                is Track -> {
+                    if (isFavorite) {
+                        favoritesRepository.addFavoriteTrack(item)
+                        if (tracks.none { it.id == item.id }) {
+                            tracks = tracks + item
+                        }
+                    } else {
+                        favoritesRepository.removeFavoriteTrack(item.id)
+                        tracks = tracks.filterNot { it.id == item.id }
+                    }
+                }
+
+                is Artist -> {
+                    if (isFavorite) {
+                        favoritesRepository.addFavoriteArtist(item)
+                        if (artists.none { it.id == item.id }) {
+                            artists = artists + item
+                        }
+                    } else {
+                        favoritesRepository.removeFavoriteArtist(item.id)
+                        artists = artists.filterNot { it.id == item.id }
+                    }
+                }
+
+                is Album -> {
+                    if (isFavorite) {
+                        favoritesRepository.addFavoriteAlbum(item)
+                        if (albums.none { it.id == item.id }) {
+                            albums = albums + item
+                        }
+                    } else {
+                        favoritesRepository.removeFavoriteAlbum(item.id)
+                        albums = albums.filterNot { it.id == item.id }
+                    }
+                }
+            }
+        }
+    }
+
+
 
     if (isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -98,7 +142,7 @@ fun HomeScreen(
                     TrackCard(
                         track = track,
                         isFavorite = true,
-                        onFavoriteClick = { _, _ -> },
+                        onFavoriteClick = onFavoriteClick,
                         onClick = { navController?.navigate("detail-track/${track.id}") }
                     )
                 }
@@ -116,7 +160,7 @@ fun HomeScreen(
                     ArtistCard(
                         artist = artist,
                         isFavorite = true,
-                        onFavoriteClick = { _, _ -> },
+                        onFavoriteClick = onFavoriteClick,
                         onClick = { navController?.navigate("detail-artist/${artist.id}") }
                     )
                 }
@@ -134,7 +178,7 @@ fun HomeScreen(
                     AlbumCard(
                         album = album,
                         isFavorite = true,
-                        onFavoriteClick = { _, _ -> },
+                        onFavoriteClick = onFavoriteClick,
                         onClick = { navController?.navigate("detail-album/${album.id}") }
                     )
                 }
