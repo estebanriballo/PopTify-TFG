@@ -1,153 +1,66 @@
 package com.example.poptify.ui.screens
 
-import android.util.Log
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.adamratzman.spotify.models.Album
-import com.adamratzman.spotify.models.Artist
-import com.adamratzman.spotify.models.Track
-import com.example.poptify.FavoritesRepository
-import com.example.poptify.SpotifyApiRequest
-import com.example.poptify.ui.components.AlbumCard
-import com.example.poptify.ui.components.ArtistCard
-import com.example.poptify.ui.components.TrackCard
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import kotlinx.coroutines.flow.first
+import com.example.poptify.FavoritesRepository
+import com.example.poptify.ui.components.SectionCard
 
 @Composable
 fun PersonalScreen(
-    favoritesRepository: FavoritesRepository = remember { FavoritesRepository() },
-    spotifyApi: SpotifyApiRequest = remember { SpotifyApiRequest() },
-    navController: NavController? = null
+    navController: NavController? = null,
+    favoritesRepository: FavoritesRepository = remember { FavoritesRepository() }
 ) {
-    val scope = rememberCoroutineScope()
+    var tracksCount by remember { mutableStateOf(0) }
+    var artistsCount by remember { mutableStateOf(0) }
+    var albumsCount by remember { mutableStateOf(0) }
 
-    // Estados simplificados
-    val (tracks, setTracks) = remember { mutableStateOf<List<Track>>(emptyList()) }
-    val (artists, setArtists) = remember { mutableStateOf<List<Artist>>(emptyList()) }
-    val (albums, setAlbums) = remember { mutableStateOf<List<Album>>(emptyList()) }
-    val (isLoading, setLoading) = remember { mutableStateOf(true) }
-
-    // Cargar datos una sola vez al entrar
+    // Cargar datos rápidos
     LaunchedEffect(Unit) {
-        scope.launch {
-            try {
-                // 1. Inicializar API si es necesario
-                spotifyApi.buildSearchAPI()
-
-                // 2. Cargar IDs de favoritos
-                val favTracks = favoritesRepository.getFavoriteTracks().first()
-                val favArtists = favoritesRepository.getFavoriteArtists().first()
-                val favAlbums = favoritesRepository.getFavoriteAlbums().first()
-
-                // 3. Obtener los objetos completos
-                val loadedTracks = favTracks.mapNotNull {
-                    runCatching { spotifyApi.getTrack(it.id) }.getOrNull()
-                }
-
-                val loadedArtists = favArtists.mapNotNull {
-                    runCatching { spotifyApi.getArtist(it.id) }.getOrNull()
-                }
-
-                val loadedAlbums = favAlbums.mapNotNull {
-                    runCatching { spotifyApi.getAlbum(it.id) }.getOrNull()
-                }
-
-                // 4. Actualizar estado
-                setTracks(loadedTracks)
-                setArtists(loadedArtists)
-                setAlbums(loadedAlbums)
-
-            } catch (e: Exception) {
-                Log.e("PersonalScreen", "Error loading favorites", e)
-            } finally {
-                setLoading(false)
-            }
-        }
+        tracksCount = favoritesRepository.getFavoriteTracks().first().size
+        artistsCount = favoritesRepository.getFavoriteArtists().first().size
+        albumsCount = favoritesRepository.getFavoriteAlbums().first().size
     }
 
-    // UI simple
-    if (isLoading) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
-    } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            // Sección de canciones
-            if (tracks.isNotEmpty()) {
-                Text("Tus canciones", style = MaterialTheme.typography.titleLarge)
-                LazyColumn {
-                    items(tracks) { track ->
-                        TrackCard(
-                            track = track,
-                            isFavorite = true,
-                            onFavoriteClick = { _, _ -> },
-                            onClick = { navController?.navigate("detail-track/${track.id}") }
-                        )
-                    }
-                }
-            }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start
+    ) {
+        Text("👋 Bienvenido a tu espacio", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("Consulta tu actividad favorita y navega a tus contenidos guardados.", style = MaterialTheme.typography.bodyLarge)
 
-            // Sección de artistas
-            if (artists.isNotEmpty()) {
-                Text("Tus artistas", style = MaterialTheme.typography.titleLarge)
-                LazyColumn {
-                    items(artists) { artist ->
-                        ArtistCard(
-                            artist = artist,
-                            isFavorite = true,
-                            onFavoriteClick = { _, _ -> },
-                            onClick = { navController?.navigate("detail-artist/${artist.id}") }
-                        )
-                    }
-                }
-            }
+        Spacer(modifier = Modifier.height(32.dp))
 
-            // Sección de álbumes
-            if (albums.isNotEmpty()) {
-                Text("Tus álbumes", style = MaterialTheme.typography.titleLarge)
-                LazyColumn {
-                    items(albums) { album ->
-                        AlbumCard(
-                            album = album,
-                            isFavorite = true,
-                            onFavoriteClick = { _, _ -> },
-                            onClick = { navController?.navigate("detail-album/${album.id}") }
-                        )
-                    }
-                }
-            }
+        SectionCard(
+            title = "Canciones favoritas",
+            description = "Has marcado $tracksCount canciones",
+            onClick = { navController?.navigate("personal/favoriteTracks") },
+            color = Color(0xFFBBDEFB)
+        )
 
-            if (tracks.isEmpty() && artists.isEmpty() && albums.isEmpty()) {
-                Text("Añade algunos favoritos para verlos aquí")
-            }
-        }
+        SectionCard(
+            title = "Artistas favoritos",
+            description = "Has marcado $artistsCount artistas",
+            onClick = { navController?.navigate("personal/favoriteArtists") },
+            color = Color(0xFFC8E6C9)
+        )
+
+        SectionCard(
+            title = "Álbumes favoritos",
+            description = "Has marcado $albumsCount álbumes",
+            onClick = { navController?.navigate("personal/favoriteAlbums") },
+            color = Color(0xFFFFF9C4)
+        )
     }
 }

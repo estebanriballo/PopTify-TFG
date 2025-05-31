@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.adamratzman.spotify.models.Album
@@ -24,6 +25,7 @@ import com.example.poptify.SpotifyApiRequest
 import com.example.poptify.ui.components.AlbumCard
 import com.example.poptify.ui.components.ArtistCard
 import com.example.poptify.ui.components.TrackCard
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -35,6 +37,9 @@ fun HomeScreen(
     spotifyApi: SpotifyApiRequest = remember { SpotifyApiRequest() }
 ) {
     val scope = rememberCoroutineScope()
+
+    val auth = FirebaseAuth.getInstance()
+    val user = auth.currentUser
 
     // Estados simplificados
     var tracks by remember { mutableStateOf<List<Track>>(emptyList()) }
@@ -121,8 +126,6 @@ fun HomeScreen(
         }
     }
 
-
-
     if (isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
@@ -138,7 +141,7 @@ fun HomeScreen(
                 title = "Favorite Tracks",
                 isLoading = isLoading,
                 items = if (tracks.size > 3) tracks.take(4) else tracks,
-                onSeeAllClick = { navController?.navigate("personal") },
+                onSeeAllClick = { navController?.navigate("personal/favoriteTracks") },
                 itemContent = { track ->
                     TrackCard(
                         track = track,

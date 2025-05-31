@@ -132,12 +132,26 @@ fun MainScreen(navController: NavController? = null) {
             composable(route = "personal") {
                 PersonalScreen(navController = navController1)
             }
+
+            composable(route = "personal/favoriteTracks") {
+                FavoriteTracksScreen(navController = navController1)
+            }
+
+            composable(route = "personal/favoriteArtists") {
+                FavoriteArtistsScreen(navController = navController1)
+            }
+
+            composable(route = "personal/favoriteAlbums") {
+                FavoriteAlbumsScreen(navController = navController1)
+            }
+
             composable(route = "settings") {
                 SettingsScreen(
                     navController = navController,
                     navController1 = navController1
                 )
             }
+
 
 
             composable(
