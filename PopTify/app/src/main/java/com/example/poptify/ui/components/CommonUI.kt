@@ -1,9 +1,13 @@
 package com.example.poptify.ui.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -14,6 +18,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -37,11 +42,15 @@ fun TrackCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .height(100.dp)
             .clickable (
                 onClick = onClick
             )
     ) {
-        Row {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             GlideImage(
                 model = track.album.images.firstOrNull()?.url ?: R.drawable.ic_music_note,
                 contentDescription = "Cover album ${track.name}",
@@ -51,11 +60,15 @@ fun TrackCard(
             )
             Column(
                 modifier = Modifier
+                    .weight(1f)
                     .padding(all = 15.dp)
             ) {
                 Text(text = track.name)
                 Text(text = track.artists[0].name)
             }
+
+            Spacer(modifier = Modifier.weight(0.01f))
+
             IconButton(
                 onClick = { onFavoriteClick(track, !isFavorite) }
             ) {
@@ -80,11 +93,15 @@ fun ArtistCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .height(100.dp)
             .clickable (
                 onClick = onClick
             )
     ) {
-        Row {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             GlideImage(
                 model = artist.images.firstOrNull()?.url ?: R.drawable.ic_music_note,
                 contentDescription = "Imagen de ${artist.name}",
@@ -94,10 +111,14 @@ fun ArtistCard(
             )
             Column(
                 modifier = Modifier
+                    .weight(1f)
                     .padding(all = 15.dp)
             ) {
                 Text(text = artist.name)
             }
+
+            Spacer(modifier = Modifier.weight(0.01f))
+
             IconButton(
                 onClick = { onFavoriteClick(artist, !isFavorite) }
             ) {
@@ -122,11 +143,15 @@ fun AlbumCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .height(100.dp)
             .clickable (
                 onClick = onClick
             )
     ) {
-        Row {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             GlideImage(
                 model = album.images.firstOrNull()?.url ?: R.drawable.ic_music_note,
                 contentDescription = "Cover album ${album.name}",
@@ -136,11 +161,15 @@ fun AlbumCard(
             )
             Column(
                 modifier = Modifier
+                    .weight(1f)
                     .padding(all = 15.dp)
             ) {
                 Text(text = album.name)
                 Text(text = album.artists[0].name)
             }
+
+            Spacer(modifier = Modifier.weight(0.01f))
+
             IconButton(
                 onClick = { onFavoriteClick(album, !isFavorite) }
             ) {
@@ -165,11 +194,15 @@ fun AlbumCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .height(100.dp)
             .clickable (
                 onClick = onClick
             )
     ) {
-        Row {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             GlideImage(
                 model = album.images.firstOrNull()?.url ?: R.drawable.ic_music_note,
                 contentDescription = "Cover album ${album.name}",
@@ -179,11 +212,15 @@ fun AlbumCard(
             )
             Column(
                 modifier = Modifier
+                    .weight(1f)
                     .padding(all = 15.dp)
             ) {
                 Text(text = album.name)
                 Text(text = album.artists[0].name)
             }
+
+            Spacer(modifier = Modifier.weight(0.01f))
+
             IconButton(
                 onClick = { onFavoriteClick(album, !isFavorite) }
             ) {
