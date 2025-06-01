@@ -28,9 +28,16 @@ fun SectionCard(
         colors = CardDefaults.cardColors(containerColor = color)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(title, style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge.copy(color = Color.Black)
+            )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(description, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium.copy(color = Color.Black)
+            )
         }
     }
 }
+

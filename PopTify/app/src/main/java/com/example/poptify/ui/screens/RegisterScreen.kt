@@ -1,5 +1,6 @@
 package com.example.poptify.ui.screens
 
+import android.hardware.camera2.params.BlackLevelPattern
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -65,9 +71,14 @@ fun RegisterScreen(
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
+            textStyle = TextStyle(color = Color.Black),
+            label = { Text(text = "Email") },
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                autoCorrect = false
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -75,10 +86,14 @@ fun RegisterScreen(
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
+            textStyle = TextStyle(color = Color.Black),
             label = { Text("Contraseña") },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                autoCorrect = false
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -86,10 +101,15 @@ fun RegisterScreen(
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
+            textStyle = TextStyle(color = Color.Black),
             label = { Text("Confirmar Contraseña") },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                autoCorrect = false
+            )
+
         )
 
         Spacer(modifier = Modifier.height(24.dp))

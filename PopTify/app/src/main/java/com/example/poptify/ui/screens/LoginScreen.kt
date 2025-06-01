@@ -21,6 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -65,10 +68,14 @@ fun LoginScreen(
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
+            textStyle = TextStyle(color = Color.Black),
             label = { Text("Email") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            keyboardOptions = KeyboardOptions.Default.copy(autoCorrectEnabled = false)
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                autoCorrect = false
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -76,10 +83,14 @@ fun LoginScreen(
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
+            textStyle = TextStyle(color = Color.Black),
             label = { Text("Contraseña") },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                autoCorrect = false
+            )
         )
 
         Spacer(modifier = Modifier.padding(24.dp))
