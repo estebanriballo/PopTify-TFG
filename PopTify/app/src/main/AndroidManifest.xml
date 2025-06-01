@@ -9,7 +9,7 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.Poptify"
         android:largeHeap="true"
@@ -22,7 +22,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Poptify">
+            android:theme="@style/Theme.Poptify.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
