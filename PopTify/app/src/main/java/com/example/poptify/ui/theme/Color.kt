@@ -2,10 +2,16 @@ package com.example.poptify.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Colores personalizados
+val DeepGreen = Color(0xFF005D57) // Oscuro principal
+val ForestGreen = Color(0xFF007D51) // Oscuro secundario
+val MintGreen = Color(0xFF37EFBA) // Acento claro y vibrante
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val LightBackground = Color(0xFFF0FDF9)
+val DarkBackground = Color(0xFF0B1D1C)
+
+val LightSurface = Color(0xFFE0F2F1)
+val DarkSurface = Color(0xFF112524)
+
+val OnPrimaryLight = Color.White
+val OnPrimaryDark = Color.Black

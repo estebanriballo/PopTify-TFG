@@ -59,7 +59,6 @@ fun FavoriteAlbumsScreen(
                     runCatching { spotifyApi.getAlbum(it.id) }.getOrNull()
                 }
 
-
                 // 4. Actualizar estado
                 albums = (loadedAlbums)
             } catch (e: Exception) {
