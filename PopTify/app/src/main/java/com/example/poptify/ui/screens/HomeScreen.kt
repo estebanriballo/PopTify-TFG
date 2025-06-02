@@ -159,7 +159,7 @@ fun HomeScreen(
                 title = "Favorite Artists",
                 isLoading = isLoading,
                 items = if (artists.size > 3) artists.take(4) else artists,
-                onSeeAllClick = { navController?.navigate("personal") },
+                onSeeAllClick = { navController?.navigate("personal/favoriteArtists") },
                 itemContent = { artist ->
                     ArtistCard(
                         artist = artist,
@@ -177,7 +177,7 @@ fun HomeScreen(
                 title = "Favorite Albums",
                 isLoading = isLoading,
                 items = if (albums.size > 3) albums.take(4) else albums,
-                onSeeAllClick = { navController?.navigate("personal") },
+                onSeeAllClick = { navController?.navigate("personal/favoriteAlbums") },
                 itemContent = { album ->
                     AlbumCard(
                         album = album,

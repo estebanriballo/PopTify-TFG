@@ -131,7 +131,7 @@ fun PersonalScreen(
             SectionCard(
                 title = "Género más escuchado",
                 description = "Tu género favorito es $topGenre",
-                onClick = {},
+                onClick = { navController?.navigate("personal/favoriteArtists") },
                 color = Color(0xFFD1C4E9)
             )
         }
@@ -140,7 +140,7 @@ fun PersonalScreen(
             SectionCard(
                 title = "Artista más frecuente",
                 description = "Has guardado más canciones de $topArtist",
-                onClick = {},
+                onClick = { navController?.navigate("personal/favoriteTracks") },
                 color = Color(0xFFFFCCBC)
             )
         }
@@ -149,7 +149,7 @@ fun PersonalScreen(
             SectionCard(
                 title = "Álbum más frecuente",
                 description = "Tienes más canciones del álbum $topAlbum",
-                onClick = {},
+                onClick = { navController?.navigate("personal/favoriteTracks") },
                 color = Color(0xFFB2DFDB)
             )
         }
