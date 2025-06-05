@@ -68,7 +68,7 @@ fun DetailTrack(
     navController: NavController? = null,
     spotifyApi: SpotifyApiRequest = remember { SpotifyApiRequest() }
 ) {
-    var track by remember { mutableStateOf<Track?>(null) }
+    var track by remember { mutableStateOf<Track?>(null) } //Inicialización variables que se rellenarán al recibir un Track
     var album by remember { mutableStateOf<SimpleAlbum?>(null) }
     val artists = remember { mutableStateListOf<Artist>() }
     var isLoading by remember { mutableStateOf(true) }
@@ -100,7 +100,7 @@ fun DetailTrack(
         }
     }
 
-    fun onFavoriteClick(item: Any, isFavorite: Boolean) {
+    fun onFavoriteClick(item: Any, isFavorite: Boolean) { //Accion de añadir y eliminar de Favoritos enlazada a Firestore
         coroutineScope.launch {
             when (item) {
                 is Track -> {
@@ -134,7 +134,7 @@ fun DetailTrack(
         }
     }
 
-    LaunchedEffect(trackId) {
+    LaunchedEffect(trackId) { //Rellenado del track y sus artistas y album al que pertenece
         try {
             spotifyApi.buildSearchAPI()
             track = spotifyApi.getTrack(trackId)
@@ -172,7 +172,7 @@ fun DetailTrack(
             TopAppBar(
                 title = { Text("Detalles Track") },
                 navigationIcon = {
-                    IconButton(onClick = { navController?.popBackStack() }) {
+                    IconButton(onClick = { navController?.popBackStack() }) { //Volver a la pantalla anterior
                         Icon(Icons.Default.ArrowBack, "Volver")
                     }
                 },
@@ -180,7 +180,7 @@ fun DetailTrack(
                     if (track != null) {
                         val isFavorite = favoriteTracks.contains(track!!.id)
                         IconButton(onClick = {
-                            onFavoriteClick(track!!, !isFavorite)
+                            onFavoriteClick(track!!, !isFavorite) //Añadir o eliminar de Favoritos en su misma página
                         }) {
                             Icon(
                                 imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
@@ -247,7 +247,7 @@ fun DetailTrack(
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    LinearProgressIndicator(
+                    LinearProgressIndicator( //Barra que indica la popularidad del track del 0 al 100
                         progress = (track?.popularity ?: 0) / 100f,
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
@@ -316,6 +316,7 @@ fun DetailTrack(
                                     navController?.navigate("detail-artist/${artist.id}") // Pasa el ID aquí
                                 }
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                         }
                     }
 
@@ -339,6 +340,7 @@ fun DetailTrack(
                                     navController?.navigate("detail-album/${album!!.id}") // Pasa el ID aquí
                                 }
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                         }
                     }
                 }

@@ -67,7 +67,7 @@ fun DetailArtist(
     navController: NavController? = null,
     spotifyApi: SpotifyApiRequest = remember { SpotifyApiRequest() }
 ) {
-    var artist by remember { mutableStateOf<Artist?>(null) }
+    var artist by remember { mutableStateOf<Artist?>(null) } //Inicialización variables que se rellenarán al recibir un Artista
     val albums = remember { mutableStateListOf<SimpleAlbum?>() }
     val topTracks = remember { mutableStateListOf<Track>() }
     var isLoading by remember { mutableStateOf(true) }
@@ -236,6 +236,14 @@ fun DetailArtist(
                         } else null
                     )
 
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Seguidores: ${artist?.followers?.total}",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
@@ -306,6 +314,7 @@ fun DetailArtist(
                                     navController?.navigate("detail-track/${track.id}")
                                 }
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                         }
                     }
 
@@ -329,6 +338,7 @@ fun DetailArtist(
                                     navController?.navigate("detail-album/${album.id}") // Pasa el ID aquí
                                 }
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                         }
                     }
                 }

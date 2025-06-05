@@ -99,7 +99,7 @@ fun MainScreen(navController: NavController? = null) {
                     icon = {
                         Icon(
                             imageVector = Icons.Filled.Search,
-                            contentDescription = "Search"
+                            contentDescription = "Buscar"
                         )
                     },
                     label = { Text("Search") }

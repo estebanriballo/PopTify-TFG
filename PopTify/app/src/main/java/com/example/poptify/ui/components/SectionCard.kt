@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-@Composable
+@Composable //Composable usado en PersonalScreen para mostrar datos del usuario en distintos colores
 fun SectionCard(
     title: String,
     description: String,

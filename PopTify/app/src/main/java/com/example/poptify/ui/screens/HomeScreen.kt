@@ -51,15 +51,15 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         scope.launch {
             try {
-                // 1. Inicializar API si es necesario
+                // Inicializar API si es necesario
                 spotifyApi.buildSearchAPI()
 
-                // 2. Cargar IDs de favoritos
+                // Cargar IDs de favoritos
                 val favTracks = favoritesRepository.getFavoriteTracks().first()
                 val favArtists = favoritesRepository.getFavoriteArtists().first()
                 val favAlbums = favoritesRepository.getFavoriteAlbums().first()
 
-                // 3. Obtener los objetos completos
+                // Obtener los objetos completos
                 val loadedTracks = favTracks.mapNotNull {
                     runCatching { spotifyApi.getTrack(it.id) }.getOrNull()
                 }
@@ -72,7 +72,7 @@ fun HomeScreen(
                     runCatching { spotifyApi.getAlbum(it.id) }.getOrNull()
                 }
 
-                // 4. Actualizar estado
+                // Actualizar estado
                 tracks = (loadedTracks)
                 artists = (loadedArtists)
                 albums =(loadedAlbums)
@@ -138,7 +138,7 @@ fun HomeScreen(
         ) {
             // Sección de Tracks
             FavoriteSection(
-                title = "Favorite Tracks",
+                title = "Tracks Favoritos",
                 isLoading = isLoading,
                 items = if (tracks.size > 3) tracks.take(4) else tracks,
                 onSeeAllClick = { navController?.navigate("personal/favoriteTracks") },
@@ -156,7 +156,7 @@ fun HomeScreen(
 
             // Sección de Artistas
             FavoriteSection(
-                title = "Favorite Artists",
+                title = "Artistas Favoritos",
                 isLoading = isLoading,
                 items = if (artists.size > 3) artists.take(4) else artists,
                 onSeeAllClick = { navController?.navigate("personal/favoriteArtists") },
@@ -174,7 +174,7 @@ fun HomeScreen(
 
             // Sección de Álbumes
             FavoriteSection(
-                title = "Favorite Albums",
+                title = "Albumes Favoritos",
                 isLoading = isLoading,
                 items = if (albums.size > 3) albums.take(4) else albums,
                 onSeeAllClick = { navController?.navigate("personal/favoriteAlbums") },
@@ -191,6 +191,7 @@ fun HomeScreen(
     }
 }
 
+//Seccion que muestra
 @Composable
 fun <T> FavoriteSection(
     title: String,
@@ -211,8 +212,8 @@ fun <T> FavoriteSection(
             )
 
             if (items.isNotEmpty()) {
-                TextButton(onClick = onSeeAllClick) {
-                    Text("See All")
+                TextButton(onClick = onSeeAllClick) {               //Botón que te manda a la lista completa de favoritos de su tipo
+                    Text("Ver Todos")
                     Icon(
                         imageVector = Icons.Default.ArrowForward,
                         contentDescription = "See All",
@@ -228,7 +229,7 @@ fun <T> FavoriteSection(
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         } else if (items.isEmpty()) {
             Text(
-                text = "No favorites yet",
+                text = "No hay favoritos aún",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 modifier = Modifier.padding(vertical = 16.dp)

@@ -35,12 +35,12 @@ fun LoginScreen(
     navController: NavController,
     onLoginSuccess: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") } //Inicialización variables a rellenar
     var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    Column(
+    Column( //Columna que dispondrá los demás composables como son Text o los OutlinedTextField para ser rellenados
         modifier = Modifier
             .fillMaxSize()
             .padding(32.dp),
@@ -97,7 +97,7 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                if (email.isBlank() || password.isBlank()){
+                if (email.isBlank() || password.isBlank()){ //Comprueba que esten rellenos
                     errorMessage = "Por favor ingrese email y contraseña"
                 } else {
                     loginUser(email, password, onSuccess = onLoginSuccess) {
@@ -124,19 +124,19 @@ fun LoginScreen(
     }
 }
 
-private fun loginUser(
-    email: String,
+private fun loginUser( //Accion llamada al pulsar el boton de inicio de sesion
+    email: String, //Recibe email y contraseña
     password: String,
     onSuccess: () -> Unit,
     onError: (String) -> Unit
 ) {
     val auth = Firebase.auth
-    auth.signInWithEmailAndPassword(email, password)
+    auth.signInWithEmailAndPassword(email, password) //Comprueban que existan en el Firebase
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 onSuccess()
             } else {
-                onError(task.exception?.message ?: "Error desconocido al iniciar sesión")
+                onError(task.exception?.message ?: "Error desconocido al iniciar sesión") //Devuelve el error o en consecuencia un texto predeterminado
             }
         }
 }

@@ -68,7 +68,7 @@ fun DetailAlbum(
     navController: NavController? = null,
     spotifyApi: SpotifyApiRequest = remember { SpotifyApiRequest() }
 ) {
-    var album by remember { mutableStateOf<Album?>(null) }
+    var album by remember { mutableStateOf<Album?>(null) } //Inicialización variables que se rellenarán al recibir un Album
     val artists = remember { mutableStateListOf<Artist>() }
     val tracks = remember { mutableStateListOf<Track>() }
     var isLoading by remember { mutableStateOf(true) }
@@ -81,7 +81,7 @@ fun DetailAlbum(
 
     LaunchedEffect(Unit) {
         favoritesRepository.getFavoriteTracks().collect { tracks ->
-            favoriteTracks.clear()
+            favoriteTracks.clear()                                              // Carga de listas con los favoritos sacados de Firebase
             favoriteTracks.addAll(tracks.map { it.id })
         }
     }
@@ -102,7 +102,7 @@ fun DetailAlbum(
 
     fun onFavoriteClick(item: Any, isFavorite: Boolean) {
         coroutineScope.launch {
-            when (item) {
+            when (item) {                               // Accion de añadir o eliminar de favoritos
                 is Track -> {
                     if (isFavorite) {
                         favoritesRepository.addFavoriteTrack(item)
@@ -185,11 +185,11 @@ fun DetailAlbum(
             TopAppBar(
                 title = { Text("Detalles Album") },
                 navigationIcon = {
-                    IconButton(onClick = { navController?.popBackStack() }) {
+                    IconButton(onClick = { navController?.popBackStack() }) {                           // Volver a la pantalla anterior
                         Icon(Icons.Default.ArrowBack, "Volver")
                     }
                 },
-                actions = {
+                actions = {                                                 // Añadir a favorito desde el detalle
                     if (album != null) {
                         val isFavorite = favoriteAlbums.contains(album!!.id)
                         IconButton(onClick = {
@@ -228,7 +228,7 @@ fun DetailAlbum(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Text(
+                    Text(                                                               // Titulo del Album
                         text = album?.name ?: "Título desconocido",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
@@ -236,7 +236,7 @@ fun DetailAlbum(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    GlideImage(
+                    GlideImage(                                                             // Caratula del album, si no tiene, una imagen por defecto
                         model = album?.images?.firstOrNull()?.url ?: R.drawable.ic_music_note,
                         contentDescription = "Portada del álbum",
                         modifier = Modifier
@@ -260,7 +260,7 @@ fun DetailAlbum(
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    LinearProgressIndicator(
+                    LinearProgressIndicator(                                // Barra de popularidad
                         progress = (album?.popularity ?: 0) / 100f,
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
@@ -280,7 +280,7 @@ fun DetailAlbum(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Card(
+                    Card(                                           // Relación con Spotify (Si está instalado)
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp)
@@ -310,7 +310,7 @@ fun DetailAlbum(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Column {
+                    Column {                                            // Lista de Artistas dueños del Album
                         artists.forEach{ artist ->
                             ArtistCard(
                                 artist = artist,
@@ -320,6 +320,7 @@ fun DetailAlbum(
                                     navController?.navigate("detail-artist/${artist.id}")
                                 }
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                         }
                     }
 
@@ -333,7 +334,7 @@ fun DetailAlbum(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Column {
+                    Column {                                        // Lista de canciones del Album
                         tracks.forEach{ track ->
                             TrackCard(
                                 track = track,
@@ -343,6 +344,7 @@ fun DetailAlbum(
                                     navController?.navigate("detail-track/${track.id}")
                                 }
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                         }
                     }
                 }

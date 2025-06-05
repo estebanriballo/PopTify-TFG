@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,18 +50,18 @@ fun FavoriteAlbumsScreen(
     LaunchedEffect(Unit) {
         scope.launch {
             try {
-                // 1. Inicializar API si es necesario
+                // Inicializar API si es necesario
                 spotifyApi.buildSearchAPI()
 
-                // 2. Cargar IDs de favoritos
+                // Cargar IDs de favoritos
                 val favAlbums = favoritesRepository.getFavoriteAlbums().first()
 
-                // 3. Obtener los objetos completos
+                // Obtener los objetos completos
                 val loadedAlbums = favAlbums.mapNotNull {
                     runCatching { spotifyApi.getAlbum(it.id) }.getOrNull()
                 }
 
-                // 4. Actualizar estado
+                // Actualizar estado
                 albums = (loadedAlbums)
             } catch (e: Exception) {
                 Log.e("FavoriteAlbumsScreen", "Error loading favorites", e)
@@ -97,6 +99,10 @@ fun FavoriteAlbumsScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
+            Text("Álbumes Favoritos", style = MaterialTheme.typography.headlineLarge)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             LazyColumn {
                 items(albums) { album ->
                     AlbumCard(
@@ -105,6 +111,7 @@ fun FavoriteAlbumsScreen(
                         onFavoriteClick = onFavoriteClick,
                         onClick = { navController?.navigate("detail-album/${album.id}") }
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
                 }
             }
         }

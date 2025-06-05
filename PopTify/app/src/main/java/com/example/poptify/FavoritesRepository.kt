@@ -22,6 +22,7 @@ class FavoritesRepository {
     private val currentUserId: String?
         get() = auth.currentUser?.uid
 
+    //Acciones relacionadas al manejo del almacenamiento de los Tracks favoritos en Firestore
     suspend fun addFavoriteTrack(track: Track) {
         if (currentUserId == null) return
 
@@ -76,6 +77,7 @@ class FavoritesRepository {
         awaitClose { listener.remove() }
     }
 
+    //Acciones relacionadas al manejo del almacenamiento de los Artists favoritos en Firestore
     suspend fun addFavoriteArtist(artist: Artist) {
         if (currentUserId == null) return
 
@@ -134,6 +136,7 @@ class FavoritesRepository {
         }
     }
 
+    //Acciones relacionadas al manejo del almacenamiento de los Albums favoritos en Firestore
     suspend fun addFavoriteAlbum(album: SimpleAlbum) {
         if (currentUserId == null) return
 
@@ -152,6 +155,7 @@ class FavoritesRepository {
             .await()
     }
 
+    //Segundo addAlbum distinto al otro, este recibe un Album y el otro un SimpleAlbum por que los atributos album de Tracks y Artists se devuelven como SimpleAlbum.
     suspend fun addFavoriteAlbum(album: Album) {
         if (currentUserId == null) return
 

@@ -87,7 +87,7 @@ fun SearchScreen(
     var showHistory by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
-        // Listener para tracks (que funciona)
+        // Listener para tracks
         favoritesRepository.getFavoriteTracks().collect { tracks ->
             favoriteTracks.clear()
             favoriteTracks.addAll(tracks.map { it.id })
@@ -160,17 +160,17 @@ fun SearchScreen(
                 searchQuery = it
                 showHistory = it.isEmpty()
             },
-            onSearch = {
-                if (searchQuery.isNotBlank()) {
+            onSearch = { // En caso de pulsar buscar
+                if (searchQuery.isNotBlank()) {  // Si el query no está vacío
                     coroutineScope.launch {
-                        searchHistoryPreferences.addSearchQuery(searchQuery)
+                        searchHistoryPreferences.addSearchQuery(searchQuery)        // Añade la última búsqueda al historial
                     }
-                    isSearching = true
+                    isSearching = true      // Cambia las variables que muestran o no el historial, el icono de cargando y si ha buscado
                     hasSearched = true
                     showHistory = false
 
                     coroutineScope.launch {
-                        try {
+                        try {                           // Aqui construye la API y llama a la función search mandándole el query escrito por el usuario
                             spotifyApi.buildSearchAPI()
                             val result = spotifyApi.search(searchQuery)
                             searchTracksResults.clear()
@@ -184,12 +184,12 @@ fun SearchScreen(
                             }
                             result.albums?.items?.forEach { album ->
                                 searchAlbumsResults.add(album)
-                            }
+                            }                                               // Leyendo el resultado por tipos rellena las listas Tracks, Artists y Albums
                         } catch (e: Exception) {
                             searchTracksResults.clear()
                             searchArtistsResults.clear()
                             searchAlbumsResults.clear()
-                        } finally {
+                        } finally {                                 // En caso de fallar las vacía
                             isSearching = false
                         }
                     }
@@ -202,16 +202,16 @@ fun SearchScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (showHistory && searchHistory.isNotEmpty()) {
+        if (showHistory && searchHistory.isNotEmpty()) {    // Al entrar a SearchScreen comprueba si el historial existe y no está vacío para mostrarlo
             Text(
                 text = "Historial de búsqueda",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(16.dp, 8.dp)
             )
             LazyColumn {
-                items(searchHistory) { historyItem ->
+                items(searchHistory) { historyItem ->       // Aquí se muestran todos las palabras buscadas
                     Surface(
-                        onClick = {
+                        onClick = {                         // En caso de ser clicadas se procedería a la busqueda
                             searchQuery = historyItem
                             showHistory = false
                             if (historyItem.isNotBlank()) {
@@ -263,14 +263,14 @@ fun SearchScreen(
         } else {
             if (hasSearched && (searchTracksResults.isNotEmpty() ||
                         searchArtistsResults.isNotEmpty() ||
-                        searchAlbumsResults.isNotEmpty())) {
+                        searchAlbumsResults.isNotEmpty())) {            // Cuando ya se ha realizado una busqueda muestra los resultados.
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .selectableGroup(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    if (searchTracksResults.isNotEmpty()){
+                    if (searchTracksResults.isNotEmpty()){ //Lista de busqueda de Tracks
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
@@ -292,7 +292,7 @@ fun SearchScreen(
                             )
                         }
                     }
-                    if (searchArtistsResults.isNotEmpty()){
+                    if (searchArtistsResults.isNotEmpty()){ //Lista de busqueda de Artistas
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
@@ -314,7 +314,7 @@ fun SearchScreen(
                             )
                         }
                     }
-                    if (searchAlbumsResults.isNotEmpty()){
+                    if (searchAlbumsResults.isNotEmpty()){ //Lista de busqueda de Albumes
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
@@ -342,7 +342,7 @@ fun SearchScreen(
             }
         }
 
-        if (isSearching) {
+        if (isSearching) { // Si está buscando muestra un indicador de progreso
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -354,7 +354,7 @@ fun SearchScreen(
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 if (selectedOption == "Tracks" && searchTracksResults.isNotEmpty()) {
                     items(searchTracksResults) { item ->
-                        TrackCard(
+                        TrackCard(                                  // Track card recibe el track de la busqueda y lo que debe hacer en caso de click o click en favorito
                             track = item,
                             isFavorite = favoriteTracks.contains(item.id),
                             onFavoriteClick = { t, fav -> onFavoriteClick(t, fav) },
@@ -368,7 +368,7 @@ fun SearchScreen(
                     }
                 } else if (selectedOption == "Artists" && searchArtistsResults.isNotEmpty()) {
                     items(searchArtistsResults) { item ->
-                        ArtistCard(
+                        ArtistCard(                                          // Artist card recibe el track de la busqueda y lo que debe hacer en caso de click o click en favorito
                             artist = item,
                             isFavorite = favoriteArtists.contains(item.id),
                             onFavoriteClick = { t, fav -> onFavoriteClick(t, fav) },
@@ -382,7 +382,7 @@ fun SearchScreen(
                     }
                 } else if (selectedOption == "Albums" && searchAlbumsResults.isNotEmpty()) {
                     items(searchAlbumsResults) { item ->
-                        AlbumCard(
+                        AlbumCard(                                               // Album card recibe el track de la busqueda y lo que debe hacer en caso de click o click en favorito
                             album = item,
                             isFavorite = favoriteAlbums.contains(item.id),
                             onFavoriteClick = { t, fav -> onFavoriteClick(t, fav) },

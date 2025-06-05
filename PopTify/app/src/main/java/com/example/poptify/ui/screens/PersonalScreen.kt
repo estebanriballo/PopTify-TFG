@@ -43,10 +43,10 @@ fun PersonalScreen(
     LaunchedEffect(Unit) {
         scope.launch {
             try {
-                // 1. Inicializar API si es necesario
+                // Inicializar API si es necesario
                 spotifyApi.buildSearchAPI()
 
-                // 2. Cargar IDs de favoritos
+                // Cargar IDs de favoritos
                 val favTracks = favoritesRepository.getFavoriteTracks().first()
                 val favArtists = favoritesRepository.getFavoriteArtists().first()
 
@@ -57,7 +57,7 @@ fun PersonalScreen(
                     runCatching { spotifyApi.getTrack(it.id) }.getOrNull()
                 }
 
-                // 4. Actualizar estado
+                // Actualizar estado
                 tracks = (loadedTracks)
                 artists = (loadedArtists)
 

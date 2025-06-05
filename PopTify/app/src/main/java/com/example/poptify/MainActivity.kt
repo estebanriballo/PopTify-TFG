@@ -30,7 +30,7 @@ import com.google.firebase.auth.auth
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        installSplashScreen() //Crea SplashScreen
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -78,6 +78,9 @@ fun PoptifyApp() {
         }
     }
 
+    //Navegación que maneja la autenticación del usuario
+
+    //En caso de estar autenticado te envia directamente al MainScreen
     NavHost(
         navController = navController,
         startDestination = if (auth.currentUser != null) "main" else "login"
