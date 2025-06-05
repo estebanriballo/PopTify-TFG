@@ -32,7 +32,7 @@ class SearchHistoryPreferences(private val context: Context) {
         }
     }
 
-    suspend fun clearSearchHistory() {
+    suspend fun clearSearchHistory() {      // Borrar historial
         context.dataStore.edit { preferences ->
             preferences.remove(SEARCH_HISTORY)
         }

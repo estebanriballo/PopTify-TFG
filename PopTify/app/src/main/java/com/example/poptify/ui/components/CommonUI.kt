@@ -36,7 +36,7 @@ import com.example.poptify.R
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun TrackCard(
+fun TrackCard( // Tarjeta que recibe Track y dispone su imagen, nombre y artista, con la posibilidad de manejar el Favorito
     track: Track,
     isFavorite: Boolean,
     onFavoriteClick: (Track, Boolean) -> Unit,
@@ -54,7 +54,7 @@ fun TrackCard(
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            GlideImage(
+            GlideImage(                                  // Imagen del album al que pertenece
                 model = track.album.images.firstOrNull()?.url ?: R.drawable.ic_music_note,
                 contentDescription = "Cover album ${track.name}",
                 modifier = Modifier
@@ -73,7 +73,7 @@ fun TrackCard(
 
             Spacer(modifier = Modifier.weight(0.01f))
 
-            IconButton(
+            IconButton(                                         // Boton de favorito
                 onClick = { onFavoriteClick(track, !isFavorite) }
             ) {
                 Icon(
